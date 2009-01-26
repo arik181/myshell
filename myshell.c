@@ -29,15 +29,6 @@
 
 int main(int argc, char ** argv)
 {
-	/*** Start Timing ***/
-	struct timeval starttime;
-	struct timeval endtime;
-	struct timeval finaltime;
-	gettimeofday(&starttime, NULL);
-
-	/*** Determine number of files ***/
-	int numberoffiles = argc - ARGNAME;
-
 	/*** Set default state ***/
 	unsigned state = DEFAULT;
 
@@ -108,10 +99,10 @@ void stdiocp(int argc, char ** argv)
 			if (i != 0)
 			{
 				/*** Dump file1 to file2 ***/
-				myfwrite(bufptr,CHARSIZE,CHARSIZE,outfile);
+				fwrite(bufptr,CHARSIZE,CHARSIZE,stream);
 			}
 
-			myfread(bufptr,CHARSIZE,CHARSIZE,cpfile);
+			fread(bufptr,CHARSIZE,CHARSIZE,stream);
 			++i;
 		}
 
@@ -119,73 +110,5 @@ void stdiocp(int argc, char ** argv)
 		fclose(outfile);
 		fclose(cpfile);
 	}
-}
-
-
-/*** The system call version of the cp code ***/
-void syscallcp(int argc, char ** argv)
-{
-	/*** Init file descriptor ***/
-	int cpfile = 0;
-	int outfile = 0;
-	off_t filesize = 0;
-
-	/*** File buffer ***/
-	char buf = '\0';
-	char * bufptr = &buf;
-
-	/*** Open file for reading ***/
-	cpfile = open(argv[SFILE1], O_RDONLY);
-
-	if (cpfile == 0)
-	{
-		perror("\nBad filename or nonexistent file\n");
-	}
-	else
-	{
-		/*** Open file for writing ***/
-		outfile = open(argv[SFILE2], O_WRONLY|O_CREAT, 
-				S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-
-		/*** Read file  ***/
-		while (myread(cpfile,bufptr,CHARSIZE))
-		{
-			/*** Dump file1 to file2 ***/
-			if(bufptr)
-				mywrite(outfile,bufptr,CHARSIZE);
-		}
-			
-		/*** Close up shop ***/
-		close(outfile);
-		close(cpfile);
-	}
-}
-
-int myread(int file, char * bufptr, int count)
-{
-	int retval;
-	retval = read(file, bufptr, count);
-	return retval;
-}
-
-int mywrite(int file, char * bufptr, int count)
-{
-	int retval;
-	retval = write(file, bufptr, count);
-	return retval;
-}
-
-size_t myfread(void * bufptr,size_t size,size_t nmemb,FILE * stream)
-{
-	size_t retval;
-	fread(bufptr,size,nmemb,stream);
-	return retval;
-}
-
-size_t myfwrite(const void * bufptr,size_t size,size_t nmemb,FILE * stream)
-{
-	size_t retval;
-	fwrite(bufptr,size,nmemb,stream);
-	return retval;
 }
 
