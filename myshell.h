@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+
+/*
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -7,6 +9,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+*/
 
 /*** Integer Definitions ***/
 #define FORMATSTRINGSIZE 	30
@@ -25,14 +28,5 @@
 #define FLAG1			0x8
 
 /*** Functions ***/
-void stdiocp(int argc, char ** argv);
-void syscallcp(int argc, char ** argv);
+void setstate(int argc, char ** argv, unsigned state);
 
-size_t fgetfilesize(FILE * cpfile);
-off_t getfilesize(int cpfile);
-
-int myread(int file, char * bufptr, int count);
-int mywrite(int file, char * bufptr, int count);
-
-size_t myfread(void * bufptr,size_t size,size_t nmemb,FILE * stream);
-size_t myfwrite(const void * bufptr,size_t size,size_t nmemb,FILE * stream);

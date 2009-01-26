@@ -32,20 +32,19 @@ int main(int argc, char ** argv)
 	/*** Set default state ***/
 	unsigned state = DEFAULT;
 
-	/*** Determine library preference ***/
-	/*** (Check for the "-s" flag...) ***/
+	setstate(argc, argv, state);
+
+	return 0;
+}
+
+void setstate(int argc, char ** argv, unsigned state)
+{
 	if (argc >= NAMEPLUSFLAG && !strncmp(argv[1],"-s",CHARSINARG))
 	{
 		state |= USESTDIO;
 
 		/*** Subtract the flag from the file count ***/
 		--numberoffiles;
-	}
-
-	if (numberoffiles != 2)
-	{
-		printf("\nUsage: %s -s <filename 1> <filename 2> \n\n", argv[0]);
-		exit(0);
 	}
 
 	/*** If we're using stdio ***/
@@ -58,57 +57,4 @@ int main(int argc, char ** argv)
 	{
 		syscallcp(argc, argv);
 	}
-
-	gettimeofday(&endtime, NULL);
-	timersub(&endtime, &starttime, &finaltime);
-	if (&finaltime)
-		printf("total execution time:  %d (secs) : %d (usecs)\n", finaltime.tv_sec, finaltime.tv_usec);
-
-	return 0;
 }
-
-
-/*** The stdio version of the cp code ***/
-void stdiocp(int argc, char ** argv)
-{
-	/*** Init file handle ***/
-	FILE * cpfile = NULL;
-	FILE * outfile = NULL;
-	size_t filesize = 0;
-
-	/*** File buffer ***/
-	char buf = '\0';
-	char * bufptr = &buf;
-
-	/*** Open file for reading ***/
-	cpfile = fopen(argv[FFILE1],"r");
-
-	if (cpfile == NULL)
-	{
-		perror("\nBad filename or nonexistent file\n");
-	}
-	else
-	{
-		/*** Open file for writing ***/
-		outfile = fopen(argv[FFILE2],"w");
-
-		/*** Read file ***/
-		int i = 0;
-		while (!feof(cpfile))
-		{
-			if (i != 0)
-			{
-				/*** Dump file1 to file2 ***/
-				fwrite(bufptr,CHARSIZE,CHARSIZE,stream);
-			}
-
-			fread(bufptr,CHARSIZE,CHARSIZE,stream);
-			++i;
-		}
-
-		/*** Close up shop ***/
-		fclose(outfile);
-		fclose(cpfile);
-	}
-}
-
