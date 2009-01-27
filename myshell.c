@@ -29,29 +29,51 @@
 
 int main(int argc, char ** argv)
 {
-	/*** Set default state ***/
 	unsigned state = DEFAULT;
 
-	char buf = '\0';
-	char * bufptr = &buf;
+	initialize(argc,argv,state);
 
-	stateset(argc, argv, state);
-	system("clear");
+	char ** strptr;
 
 	while(!feof(stdin))
 	{
-		buf = '\0';
-		while (buf != '\n' && !feof(stdin))
-		{
-			fread(bufptr,BUFSIZE,BUFSIZE,stdin);
-			printf(bufptr);
-		}
+		strptr = NULL;
+		strptr = getcmd();
+
 	}
 
+	cleanup();
 	return 0;
 }
 
-void stateset(int argc, char ** argv, unsigned state)
+void initialize(int argc, char ** argv, unsigned state)
 {
+	system("clear");
 }
 
+char ** getcmd()
+{
+	char buf = '\0';
+	char * bufptr = &buf;
+
+	char delim = ' ';
+	const char * delimptr = &delim;
+
+	printf("%%");
+	buf = '\0';
+	char string[LINESIZE];
+	int i = 0;
+	while (*bufptr != '\n' && !feof(stdin))
+	{
+		fread(bufptr,BUFSIZE,BUFSIZE,stdin);
+		string[i] = *bufptr;
+		++i;
+	}
+
+	return NULL;
+}
+
+void cleanup()
+{
+	system("clear");
+}

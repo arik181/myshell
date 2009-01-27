@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 /*
 #include <sys/types.h>
@@ -16,6 +17,7 @@
 #define BYTESIZE 		8
 #define CHARSIZE 		1
 #define BUFSIZE 		1
+#define LINESIZE 		1024
 #define ARGNAME			1
 #define NAMEPLUSFLAG		2
 #define CHARSINARG		2
@@ -29,6 +31,7 @@
 #define FLAG1			0x8
 
 /*** Functions ***/
-void stateset(int argc, char ** argv, unsigned state);
-void buildcmd(char * buf);
-void shprompt();
+void initialize(int argc, char ** argv, unsigned state);
+char ** getcmd();
+void cleanup();
+
