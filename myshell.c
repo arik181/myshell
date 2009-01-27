@@ -1,4 +1,4 @@
-#include "mycp.h"
+#include "myshell.h"
 
 /*
  * Roughly your shell should do the following:
@@ -32,29 +32,26 @@ int main(int argc, char ** argv)
 	/*** Set default state ***/
 	unsigned state = DEFAULT;
 
-	setstate(argc, argv, state);
+	char buf = '\0';
+	char * bufptr = &buf;
+
+	stateset(argc, argv, state);
+	system("clear");
+
+	while(!feof(stdin))
+	{
+		buf = '\0';
+		while (buf != '\n' && !feof(stdin))
+		{
+			fread(bufptr,BUFSIZE,BUFSIZE,stdin);
+			printf(bufptr);
+		}
+	}
 
 	return 0;
 }
 
-void setstate(int argc, char ** argv, unsigned state)
+void stateset(int argc, char ** argv, unsigned state)
 {
-	if (argc >= NAMEPLUSFLAG && !strncmp(argv[1],"-s",CHARSINARG))
-	{
-		state |= USESTDIO;
-
-		/*** Subtract the flag from the file count ***/
-		--numberoffiles;
-	}
-
-	/*** If we're using stdio ***/
-	if (state & USESTDIO)
-	{
-		stdiocp(argc, argv);
-	}
-	/*** Else we're using straight sys calls ***/
-	else
-	{
-		syscallcp(argc, argv);
-	}
 }
+

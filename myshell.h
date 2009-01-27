@@ -15,6 +15,7 @@
 #define FORMATSTRINGSIZE 	30
 #define BYTESIZE 		8
 #define CHARSIZE 		1
+#define BUFSIZE 		1
 #define ARGNAME			1
 #define NAMEPLUSFLAG		2
 #define CHARSINARG		2
@@ -28,5 +29,6 @@
 #define FLAG1			0x8
 
 /*** Functions ***/
-void setstate(int argc, char ** argv, unsigned state);
-
+void stateset(int argc, char ** argv, unsigned state);
+void buildcmd(char * buf);
+void shprompt();
