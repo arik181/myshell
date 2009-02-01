@@ -17,7 +17,7 @@
 #define BYTESIZE 		8
 #define CHARSIZE 		1
 #define BUFSIZE 		1
-#define LINESIZE 		1024
+#define MAXLINESIZE 		1024
 #define ARGNAME			1
 #define NAMEPLUSFLAG		2
 #define CHARSINARG		2
@@ -31,7 +31,6 @@
 #define FLAG1			0x8
 
 /*** Functions ***/
-void initialize(int argc, char ** argv, unsigned state);
-char ** getcmd();
+void initialize(int argc, char ** argv, unsigned * stateptr);
 void cleanup();
 

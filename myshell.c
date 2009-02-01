@@ -30,50 +30,31 @@
 int main(int argc, char ** argv)
 {
 	unsigned state = DEFAULT;
+	unsigned * stateptr;
 
-	initialize(argc,argv,state);
+	initialize(argc,argv,stateptr);
 
-	char ** strptr;
+	char string[MAXLINESIZE];
 
 	while(!feof(stdin))
 	{
-		strptr = NULL;
-		strptr = getcmd();
-
+		printf("%%");
+		fgets(string, MAXLINESIZE, stdin);
 	}
 
 	cleanup();
 	return 0;
 }
 
-void initialize(int argc, char ** argv, unsigned state)
+void initialize(int argc, char ** argv, unsigned * stateptr)
 {
 	system("clear");
-}
-
-char ** getcmd()
-{
-	char buf = '\0';
-	char * bufptr = &buf;
-
-	char delim = ' ';
-	const char * delimptr = &delim;
-
-	printf("%%");
-	buf = '\0';
-	char string[LINESIZE];
-	int i = 0;
-	while (*bufptr != '\n' && !feof(stdin))
-	{
-		fread(bufptr,BUFSIZE,BUFSIZE,stdin);
-		string[i] = *bufptr;
-		++i;
-	}
-
-	return NULL;
 }
 
 void cleanup()
 {
 	system("clear");
 }
+
+
+
