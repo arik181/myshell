@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 /*
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h>
-#include <unistd.h>
 #include <fcntl.h>
 */
 
@@ -37,3 +37,4 @@ void handleinput(int tokencount, char * token, unsigned * stateptr,
 		 char * stringremainder, char * history);
 void cleanup();
 
+int chomp(char * chompstring);

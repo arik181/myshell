@@ -108,9 +108,15 @@ void handleinput(int tokencount, char * token, unsigned * stateptr,
 			*stateptr |= QUIT;
 			BUILTIN_ON
 		}
-		else if (!strncmp(token, "myshell\n", 7))
+		else if (!strncmp(token, "myshell", 7))
 		{
 			system(stringremainder);
+			BUILTIN_ON
+		}
+		else if (!strncmp(token, "chdir", 5))
+		{
+			chomp(stringremainder);
+			chdir(stringremainder);
 			BUILTIN_ON
 		}
 		else if (!strncmp(token, "mydebug\n", 7) &&
@@ -122,7 +128,9 @@ void handleinput(int tokencount, char * token, unsigned * stateptr,
 			BUILTIN_ON
 		}
 		else 
+		{
 			BUILTIN_OFF
+		}
 	}
 
 #undef BUILTIN_ON
@@ -144,4 +152,18 @@ void cleanup()
 }
 
 
+int chomp(char * chompstring)
+{
+	if (!chompstring)
+		return -1;
 
+	int lastchar = strlen(chompstring) - 1;
+
+	if (chompstring[lastchar] == '\n')
+	{
+		chompstring[lastchar] = '\0';
+		return 1;
+	}
+	else 
+		return 0;
+}
