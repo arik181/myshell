@@ -32,18 +32,39 @@ int main(int argc, char ** argv)
 	unsigned state = DEFAULT;
 	unsigned * stateptr;
 
+	/*** Clear screen and set default state ***/
 	initialize(argc,argv,stateptr);
 
 	char string[MAXLINESIZE];
+	char * dupstring;
+	char * token = NULL;
 
+	/*** Main loop: 
+	 * Print a prompt, 
+	 * get input, 
+	 * tokenize ***/
 	while(!feof(stdin))
 	{
 		printf("%%");
 		fgets(string, MAXLINESIZE, stdin);
+		dupstring = strdup(string);
+
+		if (string[0] != '\n')
+		while(token = strsep(&dupstring, " "))
+		{
+
+			/*** Handle input ***/
+			printf("%s", token);
+			handleinput(token);
+		}
 	}
 
 	cleanup();
 	return 0;
+}
+
+void handleinput(char * token)
+{
 }
 
 void initialize(int argc, char ** argv, unsigned * stateptr)

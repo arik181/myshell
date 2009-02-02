@@ -32,5 +32,6 @@
 
 /*** Functions ***/
 void initialize(int argc, char ** argv, unsigned * stateptr);
+void handleinput(char * token);
 void cleanup();
 
