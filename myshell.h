@@ -9,7 +9,6 @@
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
-
 */
 
 /*** Integer Definitions ***/
@@ -28,10 +27,13 @@
 
 /*** Flags ***/
 #define DEFAULT			0x0
-#define FLAG1			0x8
+#define QUIT			0x8
+#define BUILTIN			0x4
 
 /*** Functions ***/
 void initialize(int argc, char ** argv, unsigned * stateptr);
-void handleinput(char * token);
+void mainloop(unsigned * stateptr);
+void handleinput(int tokencount, char * token, unsigned * stateptr, 
+		 char * stringremainder, char * history);
 void cleanup();
 

@@ -27,50 +27,116 @@
  *
  */
 
+
 int main(int argc, char ** argv)
 {
 	unsigned state = DEFAULT;
-	unsigned * stateptr;
+	unsigned * stateptr = &state;
 
 	/*** Clear screen and set default state ***/
 	initialize(argc,argv,stateptr);
 
+	mainloop(stateptr);
+
+	cleanup();
+	return 0;
+}
+
+
+
+
+
+void mainloop(unsigned * stateptr)
+{
 	char string[MAXLINESIZE];
-	char * dupstring;
+	char * history = NULL;
+	char * dupstring = NULL;
 	char * token = NULL;
 
 	/*** Main loop: 
 	 * Print a prompt, 
 	 * get input, 
 	 * tokenize ***/
-	while(!feof(stdin))
+	while(!feof(stdin) && !(*stateptr & QUIT))
 	{
 		printf("%%");
 		fgets(string, MAXLINESIZE, stdin);
 		dupstring = strdup(string);
 
+		int tokencount = 0;
+		/*** If the user simply hits return, do nothing. ***/
 		if (string[0] != '\n')
-		while(token = strsep(&dupstring, " "))
 		{
-
-			/*** Handle input ***/
-			printf("%s", token);
-			handleinput(token);
+			/*** For each token ***/
+			while(token = strsep(&dupstring, " "))
+			{
+				handleinput(tokencount,token,stateptr,
+						dupstring,history);
+				++tokencount;
+			}
 		}
+
+		history = strdup(string);
+	}
+}
+
+
+
+void handleinput(int tokencount, char * token, unsigned * stateptr, 
+		 char * stringremainder, char * history)
+{
+
+#ifndef BUILTIN_ON
+#define BUILTIN_ON *stateptr |= BUILTIN;
+#endif
+#ifndef BUILTIN_OFF
+#define BUILTIN_OFF *stateptr = *stateptr & ~(BUILTIN);
+#endif
+
+	/*** Check the first argument for special cases and builtins. ***/
+	if (tokencount == 0)
+	{
+		if (!strncmp(token, "debug\n", 6))
+		{
+			printf("%s", token);
+			BUILTIN_ON
+		}
+		else if (!strncmp(token, "exit\n", 5) || 
+			 !strncmp(token, "x\n", 2) ||
+			 !strncmp(token, "logout\n", 7))
+		{
+			*stateptr |= QUIT;
+			BUILTIN_ON
+		}
+		else if (!strncmp(token, "myshell\n", 7))
+		{
+			system(stringremainder);
+			BUILTIN_ON
+		}
+		else if (!strncmp(token, "mydebug\n", 7) &&
+			 history)
+		{
+			if (*stateptr & BUILTIN) 
+					printf("Builtin command:\n");
+			printf("%s", history);
+			BUILTIN_ON
+		}
+		else 
+			BUILTIN_OFF
 	}
 
-	cleanup();
-	return 0;
+#undef BUILTIN_ON
+#undef BUILTIN_OFF
+
 }
 
-void handleinput(char * token)
-{
-}
+
 
 void initialize(int argc, char ** argv, unsigned * stateptr)
 {
 	system("clear");
 }
+
 
 void cleanup()
 {
