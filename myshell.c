@@ -119,7 +119,7 @@ void handleinput(char * name, unsigned * stateptr,
 	}
 	else 
 	{
-		havechildren(name,stringremainder);
+		havechildren(name,stateptr,stringremainder);
 		BUILTIN_OFF
 	}
 
@@ -129,8 +129,17 @@ void handleinput(char * name, unsigned * stateptr,
 }
 
 
-void havechildren(char * name, char * stringremainder)
+void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 {
+#ifndef BACKGROUND_ON
+#define BACKGROUND_ON *stateptr |= BACKGROUND;
+#endif
+#ifndef BACKGROUND_OFF
+#define BACKGROUND_OFF *stateptr &= ~(BACKGROUND);
+#endif
+#ifndef BACKGROUND_TEST
+#define BACKGROUND_TEST *stateptr & BACKGROUND
+#endif
 	char * argptr[MAXARGS]; 
 	char * token = NULL;
 	char * buf = NULL;
@@ -141,13 +150,13 @@ void havechildren(char * name, char * stringremainder)
 	chomp(stringremainder);
 
 	/*** Create the command string to execute. ***/
-	buf = (char*) malloc (sizeof(char)*MAXLINESIZE);
+	buf = (char*) calloc (1,sizeof(char)*MAXLINESIZE);
 	argptr[0] = buf;
 	strncat(argptr[0],name,MAXLINESIZE);
 	int i = 1;
 	while ((token = strsep(&stringremainder, " ")) != NULL)
 	{
-		buf = (char*) malloc (sizeof(char)*MAXLINESIZE);
+		buf = (char*) calloc (1,sizeof(char)*MAXLINESIZE);
 		argptr[i] = buf;
 		strncat(argptr[i],token,MAXLINESIZE);
 		strncat(argptr[i],"\0",MAXLINESIZE);
@@ -157,26 +166,54 @@ void havechildren(char * name, char * stringremainder)
 	/*** Terminate the argument array with NULL. ***/
 	argptr[i] = NULL;
 
+	/*** Test for Background symbol '&' ***/
+	/*** Note: This will not work if there is a space 
+	 * 	after the ampersand, because the space will
+	 * 	constitute the final token, and we only search
+	 * 	the final token for the ampersand. Also, the
+	 * 	background will be flagged if there is an 
+	 * 	ampersand *anywhere* in the final token, 
+	 * 	since this is a simple blind search. ***/
+	int lasttoken = i-1;
+	int j = 0;
+	while(argptr[lasttoken][j] != '\0')
+	{
+		if (argptr[lasttoken][j] == '&')
+		{
+			BACKGROUND_ON
+			argptr[lasttoken] = NULL;
+			--lasttoken;
+			break;
+		}
+		++j;
+	}
+
 	/*** Create a new child process. ***/
 	if (fork() == 0) {
 		if (execvp(argptr[0], argptr) < 0)
 			perror("execvp error");
 		exit(0);
 	}
-	else
+	else if (BACKGROUND_TEST)
 	{
 		/*** Parent waits for child. ***/
 		if (wait(0) < 0)
 			perror("wait error");
 	}
 
-	/*** Free all malloc'd memory. ***/
-	int j = 0;
-	while(argptr[j])
+	/*** Free all calloc'd memory. ***/
+	int k = 0;
+	while(argptr[k])
 	{
-		free(argptr[j]);
-		++j;
+		free(argptr[k]);
+		++k;
 	}
+
+	BACKGROUND_OFF
+
+#undef BACKGROUND_ON
+#undef BACKGROUND_OFF
+#undef BACKGROUND_TEST
 }
 
 void initialize(int argc, char ** argv, unsigned * stateptr)

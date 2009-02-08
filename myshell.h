@@ -26,6 +26,7 @@
 #define DEFAULT			0x0
 #define QUIT			0x8
 #define BUILTIN			0x4
+#define BACKGROUND		0x2
 
 /*** Functions ***/
 void initialize(int argc, char ** argv, unsigned * stateptr);
@@ -35,6 +36,6 @@ void mainloop(unsigned * stateptr);
 void handleinput(char * token, unsigned * stateptr, 
 		 char * stringremainder, char * history);
 
-void havechildren(char * name, char * stringremainder);
+void havechildren(char * name,unsigned * stateptr,char * stringremainder);
 
 int chomp(char * chompstring);
