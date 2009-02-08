@@ -1,5 +1,6 @@
 # Change Me
 NAME	= myshell
+NAME2	= mysleep
 ADIR	= arik182
 
 # Constant Variables
@@ -70,3 +71,5 @@ homework: $(NAME) profile
 	tar cvf $(ADIR).tar $(ADIR)
 	echo "Done."
 
+$(NAME2) : $(NAME2).c
+	$(COMPILER) -o $(NAME2) $(NAME2).c $(OPT) 
