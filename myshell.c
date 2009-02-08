@@ -138,7 +138,7 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 #define BACKGROUND_OFF *stateptr &= ~(BACKGROUND);
 #endif
 #ifndef BACKGROUND_TEST
-#define BACKGROUND_TEST *stateptr & BACKGROUND
+#define BACKGROUND_TEST !(*stateptr & BACKGROUND)
 #endif
 	char * argptr[MAXARGS]; 
 	char * token = NULL;
