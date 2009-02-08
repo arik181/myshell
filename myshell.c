@@ -63,17 +63,11 @@ void mainloop(unsigned * stateptr)
 		fgets(string, MAXLINESIZE, stdin);
 		dupstring = strdup(string);
 
-		int tokencount = 0;
 		/*** If the user simply hits return, do nothing. ***/
 		if (string[0] != '\n')
 		{
-			/*** For each token ***/
-			while(token = strsep(&dupstring, " "))
-			{
-				handleinput(tokencount,token,stateptr,
-						dupstring,history);
-				++tokencount;
-			}
+			token = strsep(&dupstring, " ");
+			handleinput(token,stateptr,dupstring,history);
 		}
 
 		history = strdup(string);
@@ -82,7 +76,7 @@ void mainloop(unsigned * stateptr)
 
 
 
-void handleinput(int tokencount, char * token, unsigned * stateptr, 
+void handleinput(char * name, unsigned * stateptr, 
 		 char * stringremainder, char * history)
 {
 
@@ -90,47 +84,43 @@ void handleinput(int tokencount, char * token, unsigned * stateptr,
 #define BUILTIN_ON *stateptr |= BUILTIN;
 #endif
 #ifndef BUILTIN_OFF
-#define BUILTIN_OFF *stateptr = *stateptr & ~(BUILTIN);
+#define BUILTIN_OFF *stateptr &= ~(BUILTIN);
 #endif
 
+	/*** Eliminate trailing newline characters. ***/
+	chomp(history);
+	chomp(stringremainder);
+
 	/*** Check the first argument for special cases and builtins. ***/
-	if (tokencount == 0)
+	if (!strncmp(name, "exit\n", 5) || 
+		 !strncmp(name, "x\n", 2) ||
+		 !strncmp(name, "logout\n", 7))
 	{
-		if (!strncmp(token, "debug\n", 6))
-		{
-			printf("%s", token);
-			BUILTIN_ON
-		}
-		else if (!strncmp(token, "exit\n", 5) || 
-			 !strncmp(token, "x\n", 2) ||
-			 !strncmp(token, "logout\n", 7))
-		{
-			*stateptr |= QUIT;
-			BUILTIN_ON
-		}
-		else if (!strncmp(token, "myshell", 7))
-		{
-			system(stringremainder);
-			BUILTIN_ON
-		}
-		else if (!strncmp(token, "chdir", 5))
-		{
-			chomp(stringremainder);
-			chdir(stringremainder);
-			BUILTIN_ON
-		}
-		else if (!strncmp(token, "mydebug\n", 7) &&
-			 history)
-		{
-			if (*stateptr & BUILTIN) 
-					printf("Builtin command:\n");
-			printf("%s", history);
-			BUILTIN_ON
-		}
-		else 
-		{
-			BUILTIN_OFF
-		}
+		*stateptr |= QUIT;
+		BUILTIN_ON
+	}
+	else if (!strncmp(name, "mydebug\n", 7) &&
+		 history)
+	{
+		if (*stateptr & BUILTIN) 
+				printf("Builtin command:\n");
+		printf("%s\n", history);
+		BUILTIN_ON
+	}
+	else if (!strncmp(name, "myshell", 7))
+	{
+		system(stringremainder);
+		BUILTIN_ON
+	}
+	else if (!strncmp(name, "chdir", 5))
+	{
+		chdir(stringremainder);
+		BUILTIN_ON
+	}
+	else 
+	{
+		havechildren(name,stringremainder);
+		BUILTIN_OFF
 	}
 
 #undef BUILTIN_ON
@@ -139,6 +129,55 @@ void handleinput(int tokencount, char * token, unsigned * stateptr,
 }
 
 
+void havechildren(char * name, char * stringremainder)
+{
+	char * argptr[MAXARGS]; 
+	char * token = NULL;
+	char * buf = NULL;
+
+
+	/*** Eliminate trailing newline characters. ***/
+	chomp(name);
+	chomp(stringremainder);
+
+	/*** Create the command string to execute. ***/
+	buf = (char*) malloc (sizeof(char)*MAXLINESIZE);
+	argptr[0] = buf;
+	strncat(argptr[0],name,MAXLINESIZE);
+	int i = 1;
+	while ((token = strsep(&stringremainder, " ")) != NULL)
+	{
+		buf = (char*) malloc (sizeof(char)*MAXLINESIZE);
+		argptr[i] = buf;
+		strncat(argptr[i],token,MAXLINESIZE);
+		strncat(argptr[i],"\0",MAXLINESIZE);
+		++i;
+	}
+
+	/*** Terminate the argument array with NULL. ***/
+	argptr[i] = NULL;
+
+	/*** Create a new child process. ***/
+	if (fork() == 0) {
+		if (execvp(argptr[0], argptr) < 0)
+			perror("execvp error");
+		exit(0);
+	}
+	else
+	{
+		/*** Parent waits for child. ***/
+		if (wait(0) < 0)
+			perror("wait error");
+	}
+
+	/*** Free all malloc'd memory. ***/
+	int j = 0;
+	while(argptr[j])
+	{
+		free(argptr[j]);
+		++j;
+	}
+}
 
 void initialize(int argc, char ** argv, unsigned * stateptr)
 {

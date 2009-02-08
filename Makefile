@@ -54,6 +54,10 @@ clean : $(NAME)
 dump: $(NAME)
 	objdump -d $(NAME) > objcode
 
+tex : 	
+	latex $(NAME).tex
+	dvipdfm $(NAME).dvi
+
 homework: $(NAME) profile
 	echo "Cleaning up..."
 	rm -rf $(NAME)

@@ -17,13 +17,10 @@
 #define CHARSIZE 		1
 #define BUFSIZE 		1
 #define MAXLINESIZE 		1024
+#define MAXARGS 		64
 #define ARGNAME			1
 #define NAMEPLUSFLAG		2
 #define CHARSINARG		2
-#define FFILE1			2
-#define FFILE2			3
-#define SFILE1			1
-#define SFILE2			2
 
 /*** Flags ***/
 #define DEFAULT			0x0
@@ -32,9 +29,12 @@
 
 /*** Functions ***/
 void initialize(int argc, char ** argv, unsigned * stateptr);
-void mainloop(unsigned * stateptr);
-void handleinput(int tokencount, char * token, unsigned * stateptr, 
-		 char * stringremainder, char * history);
 void cleanup();
+
+void mainloop(unsigned * stateptr);
+void handleinput(char * token, unsigned * stateptr, 
+		 char * stringremainder, char * history);
+
+void havechildren(char * name, char * stringremainder);
 
 int chomp(char * chompstring);
