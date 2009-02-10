@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 /*
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h>
@@ -39,3 +41,5 @@ void handleinput(char * token, unsigned * stateptr,
 void havechildren(char * name,unsigned * stateptr,char * stringremainder);
 
 int chomp(char * chompstring);
+
+void reapz();

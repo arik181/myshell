@@ -33,7 +33,6 @@ int main(int argc, char ** argv)
 	unsigned state = DEFAULT;
 	unsigned * stateptr = &state;
 
-	/*** Clear screen and set default state ***/
 	initialize(argc,argv,stateptr);
 
 	mainloop(stateptr);
@@ -150,6 +149,9 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 	chomp(stringremainder);
 
 	/*** Create the command string to execute. ***/
+	/*** Calloc is less efficient, but safer, and 
+	 * 	in this case, I don't care much about the
+	 * 	efficiency. ***/
 	buf = (char*) calloc (1,sizeof(char)*MAXLINESIZE);
 	argptr[0] = buf;
 	strncat(argptr[0],name,MAXLINESIZE);
@@ -219,6 +221,8 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 void initialize(int argc, char ** argv, unsigned * stateptr)
 {
 	system("clear");
+	*stateptr |= DEFAULT;
+	signal(SIGCHLD, reapz);
 }
 
 
@@ -227,7 +231,7 @@ void cleanup()
 	system("clear");
 }
 
-
+/*** Removes trailing newline characters. ***/
 int chomp(char * chompstring)
 {
 	if (!chompstring)
@@ -242,4 +246,17 @@ int chomp(char * chompstring)
 	}
 	else 
 		return 0;
+}
+
+/*** Disposes of unwashed zombie hordes ***/
+void reapz()
+{
+	int pid = 0;
+	int status = 0;
+
+	while(1) {
+		pid = waitpid(-1, &status, WNOHANG); 
+		if (pid <= 0)
+			break;
+	}
 }
