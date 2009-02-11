@@ -122,22 +122,19 @@ void handleinput(char * name, unsigned * stateptr,
 		BUILTIN_OFF
 	}
 
-#undef BUILTIN_ON
-#undef BUILTIN_OFF
-
 }
 
 
 void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 {
-#ifndef BACKGROUND_ON
-#define BACKGROUND_ON *stateptr |= BACKGROUND;
+#ifndef TURN_BACKGROUND_ON
+#define TURN_BACKGROUND_ON *stateptr |= BACKGROUND;
 #endif
-#ifndef BACKGROUND_OFF
-#define BACKGROUND_OFF *stateptr &= ~(BACKGROUND);
+#ifndef TURN_BACKGROUND_OFF
+#define TURN_BACKGROUND_OFF *stateptr &= ~(BACKGROUND);
 #endif
-#ifndef BACKGROUND_TEST
-#define BACKGROUND_TEST !(*stateptr & BACKGROUND)
+#ifndef IS_NOT_IN_BACKGROUND
+#define IS_NOT_IN_BACKGROUND !(*stateptr & BACKGROUND)
 #endif
 	char * argptr[MAXARGS]; 
 	char * token = NULL;
@@ -150,8 +147,8 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 
 	/*** Create the command string to execute. ***/
 	/*** Calloc is less efficient, but safer, and 
-	 * 	in this case, I don't care much about the
-	 * 	efficiency. ***/
+	 * 	in this case, I'd prefer error free to
+	 * 	efficient. ***/
 	buf = (char*) calloc (1,sizeof(char)*MAXLINESIZE);
 	argptr[0] = buf;
 	strncat(argptr[0],name,MAXLINESIZE);
@@ -182,7 +179,7 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 	{
 		if (argptr[lasttoken][j] == '&')
 		{
-			BACKGROUND_ON
+			TURN_BACKGROUND_ON
 			argptr[lasttoken] = NULL;
 			--lasttoken;
 			break;
@@ -191,17 +188,20 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 	}
 
 	/*** Create a new child process. ***/
-	if (fork() == 0) {
+	int pid;
+	if ((pid = fork()) == 0) {
 		if (execvp(argptr[0], argptr) < 0)
 			perror("execvp error");
 		exit(0);
 	}
-	else if (BACKGROUND_TEST)
+
+	int status;
+	if (IS_NOT_IN_BACKGROUND)
 	{
-		/*** Parent waits for child. ***/
-		if (wait(0) < 0)
-			perror("wait error");
-	}
+		/*** Parent waits for child, if it exists, 
+		* otherwise, it doesn't. ***/
+		waitpid(pid, &status, WNOHANG); 
+	} 
 
 	/*** Free all calloc'd memory. ***/
 	int k = 0;
@@ -211,11 +211,7 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 		++k;
 	}
 
-	BACKGROUND_OFF
-
-#undef BACKGROUND_ON
-#undef BACKGROUND_OFF
-#undef BACKGROUND_TEST
+	TURN_BACKGROUND_OFF
 }
 
 void initialize(int argc, char ** argv, unsigned * stateptr)
@@ -260,3 +256,9 @@ void reapz()
 			break;
 	}
 }
+
+#undef BUILTIN_ON
+#undef BUILTIN_OFF
+#undef TURN_BACKGROUND_ON
+#undef TURN_BACKGROUND_OFF
+#undef IS_NOT_IN_BACKGROUND

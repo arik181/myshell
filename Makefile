@@ -4,7 +4,7 @@ NAME2	= mysleep
 ADIR	= arik182
 
 # Constant Variables
-COMPILER	= gcc
+COMPILER	= gcc -Wall
 ASSEMBLER	= as
 LINKER		= ld
 
