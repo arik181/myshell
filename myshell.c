@@ -28,6 +28,8 @@
  */
 
 
+
+/*** Main ***/
 int main(int argc, char ** argv)
 {
 	unsigned state = DEFAULT;
@@ -255,6 +257,81 @@ void reapz()
 		if (pid <= 0)
 			break;
 	}
+}
+
+/*** Begin Linked List Code ***/
+void initlist(int N, nodeptr freelist)
+{
+	freelist = calloc((N+1), (sizeof *freelist));
+	itemptr newitem;
+	
+	int i;
+	for(i=0;i<N+1;++i)
+	{
+		newitem = calloc(1, (sizeof *newitem));
+		freelist[i].next = &freelist[i+1];
+		strcpy(freelist[i].item -> hosebag, "\0");
+	}
+
+	freelist[N].next = NULL;
+}
+
+nodeptr newnode(int i, nodeptr freelist)
+{
+	nodeptr x = deletenext(freelist);
+
+	if(x && x -> item)
+	{
+		strcpy(x -> item -> hosebag, "\0");
+		x -> next = x;
+	}
+	return x;
+}
+
+void freenode(nodeptr x, nodeptr freelist)
+{
+	if(x)
+	{
+		insertnext(freelist, x);
+	}
+}
+
+void insertnext(nodeptr x, nodeptr t)
+{
+	if(x)
+	{
+		t -> next = x -> next;
+		x -> next = t;
+	}
+}
+
+nodeptr deletenext(nodeptr x)
+{
+	nodeptr t = NULL;
+
+	if(x)
+	{
+		t = x -> next;
+		x -> next = t -> next;
+	}
+
+	return t;
+}
+
+nodeptr next(nodeptr x)
+{
+	if(x)
+		return x -> next;
+	else 
+		return NULL;
+}
+
+itemptr getitem(nodeptr x)
+{
+	if(x)
+		return x -> item;
+	else 
+		return NULL;
 }
 
 #undef BUILTIN_ON
