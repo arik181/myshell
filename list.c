@@ -1,3 +1,5 @@
+#include "list.h"
+
 /*** Create a "freelist" which stores a set number of data nodes, 
  * and allocates memory for history. This means that all memory in the
  * list is still array accessible, and is thus easier to free up. ***/
@@ -66,13 +68,14 @@ itemptr getitem(nodeptr x)
 	return x -> item;
 }
 
-/*** Free up all memory consumed by freelist ***/
+/*** Free up all memory used by freelist ***/
 void destructlist(nodeptr freelist)
 {
 	int i = 0;
-	while(freelist[i] != NULL)
+	while(freelist[i].next != NULL)
 	{
 		free(freelist[i].item);
+		++i;
 	}
 	free(freelist);
 }

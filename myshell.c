@@ -221,7 +221,6 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 	TURN_BACKGROUND_OFF
 }
 
-
 /*** System Initialization ***/
 void initialize(int argc, char ** argv, unsigned * stateptr, nodeptr freelist)
 {

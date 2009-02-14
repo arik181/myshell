@@ -6,6 +6,7 @@
 #include <wait.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "list.h"
 
 /*
 #include <sys/stat.h>

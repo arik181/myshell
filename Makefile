@@ -1,6 +1,7 @@
 # Change Me
 NAME	= myshell
 NAME2	= mysleep
+REQ1	= list
 ADIR	= arik182
 
 # Constant Variables
@@ -20,8 +21,8 @@ PROFILE		= -pg
 
 ### Compile the application ###
 
-$(NAME) : $(NAME).c $(NAME).h 
-	$(COMPILER) -o $(NAME) $(NAME).c $(OPT) 
+$(NAME) : $(NAME).c $(NAME).h $(REQ1).h
+	$(COMPILER) -o $(NAME) $(NAME).c $(REQ1).c $(OPT) 
 
 ### Special Cases ###
 	
