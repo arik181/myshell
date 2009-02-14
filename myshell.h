@@ -24,6 +24,7 @@
 #define ARGNAME			1
 #define NAMEPLUSFLAG		2
 #define CHARSINARG		2
+#define HISTORYSIZE		10
 
 /*** Flags ***/
 #define DEFAULT			0x0
@@ -31,26 +32,11 @@
 #define BUILTIN			0x4
 #define BACKGROUND		0x2
 
-/*** Linked List Definition ***/
-typedef struct node * nodeptr;
-typedef struct item * itemptr;
-
-struct item
-{
-	char hosebag[1024];
-};
-
-struct node 
-{ 
-	itemptr item; 
-	nodeptr next; 
-};
-
 
 
 /*** Flow Control Functions ***/
-void initialize(int argc, char ** argv, unsigned * stateptr);
-void mainloop(unsigned * stateptr);
+void initialize(int argc, char ** argv, unsigned * stateptr, nodeptr freelist);
+void mainloop(unsigned * stateptr, nodeptr freelist);
 void handleinput(char * token, unsigned * stateptr, 
 		 char * stringremainder, char * history);
 
@@ -62,13 +48,4 @@ int chomp(char * chompstring);
 
 /*** Signal Functions ***/
 void reapz();
-
-/*** List Functions ***/
-void initlist(int N, nodeptr freelist);
-nodeptr newnode(int i, nodeptr freelist);
-void freenode(nodeptr x, nodeptr freelist);
-void insertnext(nodeptr x, nodeptr t);
-nodeptr deletenext(nodeptr x);
-nodeptr next(nodeptr x);
-int item(nodeptr x);
 

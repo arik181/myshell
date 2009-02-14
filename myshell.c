@@ -34,10 +34,11 @@ int main(int argc, char ** argv)
 {
 	unsigned state = DEFAULT;
 	unsigned * stateptr = &state;
+	nodeptr freelist;
 
-	initialize(argc,argv,stateptr);
+	initialize(argc,argv,stateptr,freelist);
 
-	mainloop(stateptr);
+	mainloop(stateptr,freelist);
 
 	cleanup();
 	return 0;
@@ -47,7 +48,7 @@ int main(int argc, char ** argv)
 
 
 
-void mainloop(unsigned * stateptr)
+void mainloop(unsigned * stateptr, nodeptr freelist)
 {
 	char string[MAXLINESIZE];
 	char * history = NULL;
@@ -117,6 +118,10 @@ void handleinput(char * name, unsigned * stateptr,
 	{
 		chdir(stringremainder);
 		BUILTIN_ON
+	}
+	else if (!strncmp(name, "history", 7))
+	{
+		/*** History ***/
 	}
 	else 
 	{
@@ -216,20 +221,24 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 	TURN_BACKGROUND_OFF
 }
 
-void initialize(int argc, char ** argv, unsigned * stateptr)
+
+/*** System Initialization ***/
+void initialize(int argc, char ** argv, unsigned * stateptr, nodeptr freelist)
 {
 	system("clear");
 	*stateptr |= DEFAULT;
 	signal(SIGCHLD, reapz);
+	initlist(HISTORYSIZE,freelist);
 }
 
 
+/*** Cleanup Before Exiting Main ***/
 void cleanup()
 {
 	system("clear");
 }
 
-/*** Removes trailing newline characters. ***/
+/*** Removes Trailing Newline Characters. ***/
 int chomp(char * chompstring)
 {
 	if (!chompstring)
@@ -246,7 +255,7 @@ int chomp(char * chompstring)
 		return 0;
 }
 
-/*** Disposes of unwashed zombie hordes ***/
+/*** Disposes of Unwashed Zombie Hordes ***/
 void reapz()
 {
 	int pid = 0;
@@ -259,83 +268,9 @@ void reapz()
 	}
 }
 
-/*** Begin Linked List Code ***/
-void initlist(int N, nodeptr freelist)
-{
-	freelist = calloc((N+1), (sizeof *freelist));
-	itemptr newitem;
-	
-	int i;
-	for(i=0;i<N+1;++i)
-	{
-		newitem = calloc(1, (sizeof *newitem));
-		freelist[i].next = &freelist[i+1];
-		strcpy(freelist[i].item -> hosebag, "\0");
-	}
-
-	freelist[N].next = NULL;
-}
-
-nodeptr newnode(int i, nodeptr freelist)
-{
-	nodeptr x = deletenext(freelist);
-
-	if(x && x -> item)
-	{
-		strcpy(x -> item -> hosebag, "\0");
-		x -> next = x;
-	}
-	return x;
-}
-
-void freenode(nodeptr x, nodeptr freelist)
-{
-	if(x)
-	{
-		insertnext(freelist, x);
-	}
-}
-
-void insertnext(nodeptr x, nodeptr t)
-{
-	if(x)
-	{
-		t -> next = x -> next;
-		x -> next = t;
-	}
-}
-
-nodeptr deletenext(nodeptr x)
-{
-	nodeptr t = NULL;
-
-	if(x)
-	{
-		t = x -> next;
-		x -> next = t -> next;
-	}
-
-	return t;
-}
-
-nodeptr next(nodeptr x)
-{
-	if(x)
-		return x -> next;
-	else 
-		return NULL;
-}
-
-itemptr getitem(nodeptr x)
-{
-	if(x)
-		return x -> item;
-	else 
-		return NULL;
-}
-
 #undef BUILTIN_ON
 #undef BUILTIN_OFF
 #undef TURN_BACKGROUND_ON
 #undef TURN_BACKGROUND_OFF
 #undef IS_NOT_IN_BACKGROUND
+
