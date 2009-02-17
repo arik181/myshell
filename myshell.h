@@ -25,7 +25,7 @@
 #define ARGNAME			1
 #define NAMEPLUSFLAG		2
 #define CHARSINARG		2
-#define HISTORYSIZE		10
+#define HISTORYSIZE		101
 
 /*** Flags ***/
 #define DEFAULT			0x0
@@ -34,15 +34,14 @@
 #define BACKGROUND		0x2
 
 
-
 /*** Flow Control Functions ***/
-void initialize(int argc, char ** argv, unsigned * stateptr, nodeptr freelist);
-void mainloop(unsigned * stateptr, nodeptr freelist);
-void handleinput(char * token, unsigned * stateptr, 
-		 char * stringremainder, char * history);
+void initialize(int argc, char ** argv, unsigned * stateptr,listptr * historyptr);
+void mainloop(unsigned * stateptr,listptr historyptr);
+void handleinput(char * name, unsigned * stateptr, 
+		 char * stringremainder, listptr historyptr);
 
 void havechildren(char * name,unsigned * stateptr,char * stringremainder);
-void cleanup();
+void cleanup(listptr historyptr);
 
 /*** Utility Functions ***/
 int chomp(char * chompstring);

@@ -21,7 +21,7 @@ PROFILE		= -pg
 
 ### Compile the application ###
 
-$(NAME) : $(NAME).c $(NAME).h $(REQ1).h
+$(NAME) : $(NAME).c $(NAME).h $(REQ1).c $(REQ1).h
 	$(COMPILER) -o $(NAME) $(NAME).c $(REQ1).c $(OPT) 
 
 ### Special Cases ###
@@ -44,8 +44,8 @@ profile : profiletarget
 	gprof --brief --no-graph ./$(NAME) >> report.out
 	vim report.out
 
-debugtarget : $(NAME).c $(NAME).h 
-	$(COMPILER) $(DEBUG) -o $(NAME) $(NAME).c 
+debugtarget : $(NAME).c $(NAME).h $(REQ1).h
+	$(COMPILER) $(DEBUG) -o $(NAME) $(NAME).c $(REQ1).c
 
 profiletarget : $(NAME).c $(NAME).h 
 	$(COMPILER) $(PROFILE) -o $(NAME) $(NAME).c 

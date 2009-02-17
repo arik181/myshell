@@ -34,13 +34,13 @@ int main(int argc, char ** argv)
 {
 	unsigned state = DEFAULT;
 	unsigned * stateptr = &state;
-	nodeptr freelist;
+	listptr historyptr;
 
-	initialize(argc,argv,stateptr,freelist);
+	initialize(argc,argv,stateptr,&historyptr);
 
-	mainloop(stateptr,freelist);
+	mainloop(stateptr,historyptr);
 
-	cleanup();
+	cleanup(historyptr);
 	return 0;
 }
 
@@ -48,11 +48,11 @@ int main(int argc, char ** argv)
 
 
 
-void mainloop(unsigned * stateptr, nodeptr freelist)
+void mainloop(unsigned * stateptr,listptr historyptr)
 {
 	char string[MAXLINESIZE];
-	char * history = NULL;
-	char * dupstring = NULL;
+	char dupstring[MAXLINESIZE];
+	char * dupptr;
 	char * token = NULL;
 
 	/*** Main loop: 
@@ -63,23 +63,27 @@ void mainloop(unsigned * stateptr, nodeptr freelist)
 	{
 		printf("%%");
 		fgets(string, MAXLINESIZE, stdin);
-		dupstring = strdup(string);
+		strncpy(dupstring,string,MAXLINESIZE);
+		strcat(dupstring,"\0");
+
+		/*** strsep moves the pointer, so here we move it back. ***/
+		dupptr = &dupstring[0];
 
 		/*** If the user simply hits return, do nothing. ***/
 		if (string[0] != '\n')
 		{
-			token = strsep(&dupstring, " ");
-			handleinput(token,stateptr,dupstring,history);
+			token = strsep(&dupptr, " ");
+			handleinput(token,stateptr,dupptr,historyptr);
 		}
 
-		history = strdup(string);
+		addstring(string,historyptr);
 	}
 }
 
 
 
 void handleinput(char * name, unsigned * stateptr, 
-		 char * stringremainder, char * history)
+		 char * stringremainder, listptr historyptr)
 {
 
 #ifndef BUILTIN_ON
@@ -90,7 +94,6 @@ void handleinput(char * name, unsigned * stateptr,
 #endif
 
 	/*** Eliminate trailing newline characters. ***/
-	chomp(history);
 	chomp(stringremainder);
 
 	/*** Check the first argument for special cases and builtins. ***/
@@ -99,14 +102,6 @@ void handleinput(char * name, unsigned * stateptr,
 		 !strncmp(name, "logout\n", 7))
 	{
 		*stateptr |= QUIT;
-		BUILTIN_ON
-	}
-	else if (!strncmp(name, "mydebug\n", 7) &&
-		 history)
-	{
-		if (*stateptr & BUILTIN) 
-				printf("Builtin command:\n");
-		printf("%s\n", history);
 		BUILTIN_ON
 	}
 	else if (!strncmp(name, "myshell", 7))
@@ -120,8 +115,19 @@ void handleinput(char * name, unsigned * stateptr,
 		BUILTIN_ON
 	}
 	else if (!strncmp(name, "history", 7))
+	{ 
+		if (historyptr -> lastcmd)
+		{
+			if (*stateptr & BUILTIN) 
+				printf("Builtin command:\n");
+
+			printstrings(historyptr);
+		}
+		BUILTIN_ON
+	}
+	else if (name[0] == '!')
 	{
-		/*** History ***/
+		
 	}
 	else 
 	{
@@ -196,7 +202,8 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 
 	/*** Create a new child process. ***/
 	int pid;
-	if ((pid = fork()) == 0) {
+	if ((pid = fork()) == 0) 
+	{
 		if (execvp(argptr[0], argptr) < 0)
 			perror("execvp error");
 		exit(0);
@@ -222,18 +229,21 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 }
 
 /*** System Initialization ***/
-void initialize(int argc, char ** argv, unsigned * stateptr, nodeptr freelist)
+void initialize(int argc, char ** argv, unsigned * stateptr,listptr *historyptr)
 {
 	system("clear");
+
 	*stateptr |= DEFAULT;
+
 	signal(SIGCHLD, reapz);
-	initlist(HISTORYSIZE,freelist);
+
+	*historyptr = initlist(HISTORYSIZE);
 }
 
-
 /*** Cleanup Before Exiting Main ***/
-void cleanup()
+void cleanup(listptr historyptr)
 {
+	destructlist(&historyptr);
 	system("clear");
 }
 
@@ -260,7 +270,8 @@ void reapz()
 	int pid = 0;
 	int status = 0;
 
-	while(1) {
+	while(1) 
+	{
 		pid = waitpid(-1, &status, WNOHANG); 
 		if (pid <= 0)
 			break;

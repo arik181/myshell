@@ -1,27 +1,30 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+
+#ifndef MAXLINESIZE
+#define MAXLINESIZE 	1024
+#endif
 
 /*** Linked List Definition ***/
 typedef struct node * nodeptr;
-typedef struct item * itemptr;
+typedef struct list * listptr;
 
-struct item
+struct list
 {
-	char hosebag[1024];
+	nodeptr arrayhead;
+	nodeptr lastcmd;
 };
 
 struct node 
 { 
-	itemptr item; 
+	char string[MAXLINESIZE];
+	int  histnumber;
 	nodeptr next; 
 };
 
 /*** List Functions ***/
-void initlist(int N, nodeptr freelist);
-nodeptr newnode(int i, nodeptr freelist);
-void freenode(nodeptr x, nodeptr freelist);
-void insertnext(nodeptr x, nodeptr t);
-nodeptr deletenext(nodeptr x);
-nodeptr getnext(nodeptr x);
-int item(nodeptr x);
-void destructlist(nodeptr freelist);
+listptr initlist(int N);
+void addstring(char * newstring, listptr list);
+void printstrings(listptr list);
+void destructlist(listptr * list);

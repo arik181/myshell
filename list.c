@@ -1,81 +1,59 @@
 #include "list.h"
 
-/*** Create a "freelist" which stores a set number of data nodes, 
- * and allocates memory for history. This means that all memory in the
- * list is still array accessible, and is thus easier to free up. ***/
-void initlist(int N, nodeptr freelist)
+/*** Create a circular linked list which stores a set number of data nodes, 
+ * and allocates memory for each node. This means that all memory in the
+ * list is still array accessible, and is thus easier to free up. 
+ * Returns a pointer to the list.***/
+listptr initlist(int N)
 {
-	freelist = calloc((N+1), (sizeof *freelist));
-	itemptr newitem  = calloc((N+1), (sizeof *newitem));
+	/*** Allocate memory for a single list construct ***/
+	listptr list  = calloc(1, (sizeof *list));
+	/*** Allocate memory for an list of N nodes for the list***/
+	nodeptr array = calloc((N+1), (sizeof *array));
 	
 	int i;
-	for(i=0;i<N+1;++i)
+	for(i=0;i<=N;++i)
 	{
-		freelist[i].next = &freelist[i+1];
-		freelist[i].item = &newitem[i+1];
-		strcpy(freelist[i].item -> hosebag, "\0");
+		array[i].next = &array[i+1];
 	}
 
-	freelist[N].next = NULL;
+	array[N].next = list -> lastcmd = list -> arrayhead = &array[0];
+	array[N+1].next = NULL;
+
+	return list;
 }
 
-/*** Create a new node by taking one node off the end of the freelist. ***/
-nodeptr newnode(int i, nodeptr freelist)
+/*** Add a string to the list, increment its history number ***/
+void addstring(char * laststring, listptr list)
 {
-	nodeptr x = deletenext(freelist);
+	static int count = 0;
 
-	if(x && x -> item)
+	list -> lastcmd = list -> lastcmd -> next;
+	list -> lastcmd -> histnumber = ++count;
+	strncpy(list -> lastcmd -> string, laststring, MAXLINESIZE);
+}
+
+/*** Print all the strings in the list ***/
+void printstrings(listptr list)
+{
+	nodeptr printptr = list -> arrayhead -> next;
+
+	if(printptr)
 	{
-		strcpy(x -> item -> hosebag, "\0");
-		x -> next = x;
+		while((strncmp(printptr -> string,"\0",1)) && 
+		     (printptr -> next != list -> arrayhead)) 
+		{
+			printf("%d %s", printptr -> histnumber,
+					printptr -> string);
+			printptr = printptr -> next;
+		}
 	}
-	return x;
 }
 
-/*** Add a node to the freelist ***/
-void freenode(nodeptr x, nodeptr freelist)
+/*** Free up all memory used by the list ***/
+void destructlist(listptr * list)
 {
-	insertnext(freelist, x);
+ 	free((*(list)) -> arrayhead);
+ 	free((*list));
 }
 
-/*** Insert a node at next.
- * takes the current node and the node to be inserted as arguments
- * ***/
-void insertnext(nodeptr x, nodeptr t)
-{
-	t -> next = x -> next;
-	x -> next = t;
-}
-
-/*** Delete the next node, and return a reference to it ***/
-nodeptr deletenext(nodeptr x)
-{
-	nodeptr t = x -> next;
-	x -> next = t -> next;
-
-	return t;
-}
-
-/*** Return a reference to the next node ***/
-nodeptr getnext(nodeptr x)
-{
-	return x -> next;
-}
-
-/*** Return a reference to the item stored in X ***/
-itemptr getitem(nodeptr x)
-{
-	return x -> item;
-}
-
-/*** Free up all memory used by freelist ***/
-void destructlist(nodeptr freelist)
-{
-	int i = 0;
-	while(freelist[i].next != NULL)
-	{
-		free(freelist[i].item);
-		++i;
-	}
-	free(freelist);
-}
