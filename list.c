@@ -48,7 +48,7 @@ void printstrings(listptr list)
 	{
 		do
 		{
-			printf("%d %s", printptr -> histnumber,
+			printf("%d %s\n", printptr -> histnumber,
 					printptr -> string);
 			printptr = printptr -> next;
 		}

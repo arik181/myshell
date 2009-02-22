@@ -27,6 +27,9 @@
 #define CHARSINARG		2
 #define HISTORYSIZE		4
 
+#define CHDIR			5
+#define MYSHELL			7
+
 /*** Flags ***/
 #define DEFAULT			0x0
 #define QUIT			0x8
@@ -36,14 +39,13 @@
 
 /*** Flow Control Functions ***/
 void initialize(int argc, char ** argv, unsigned * stateptr,listptr * historyptr);
-void mainloop(unsigned * stateptr,listptr historyptr);
-void handleinput(char * name, unsigned * stateptr, 
-		 char * stringremainder, listptr historyptr);
+void handleinput(char * strptr, unsigned * stateptr, listptr historyptr);
 
-void havechildren(char * name,unsigned * stateptr,char * stringremainder);
+void havechildren(char * strptr, unsigned * stateptr);
 void cleanup(listptr historyptr);
 
 /*** Utility Functions ***/
+void tokenize(char * strptr, char ** remainder);
 int chomp(char * chompstring);
 
 /*** Signal Functions ***/

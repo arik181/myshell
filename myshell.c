@@ -38,22 +38,8 @@ int main(int argc, char ** argv)
 
 	initialize(argc,argv,stateptr,&historyptr);
 
-	mainloop(stateptr,historyptr);
-
-	cleanup(historyptr);
-	return 0;
-}
-
-
-
-
-
-void mainloop(unsigned * stateptr,listptr historyptr)
-{
 	char string[MAXLINESIZE];
-	char dupstring[MAXLINESIZE];
-	char * dupptr;
-	char * token = NULL;
+	char * strptr = &string[0];
 
 	/*** Main loop: 
 	 * Print a prompt, 
@@ -67,28 +53,27 @@ void mainloop(unsigned * stateptr,listptr historyptr)
 		if(feof(stdin))
 			break;
 
-		strncpy(dupstring,string,MAXLINESIZE);
-		strcat(dupstring,"\0");
-
-		/*** strsep moves the pointer, so here we move it back. ***/
-		dupptr = &dupstring[0];
-
 		/*** If the user simply hits return, do nothing. ***/
 		if (string[0] != '\n')
 		{
-			token = strsep(&dupptr, " ");
-			handleinput(token,stateptr,dupptr,historyptr);
+			handleinput(strptr,stateptr,historyptr);
 		}
 
 		/*** Add the string to history ***/
 		addstring(string,historyptr);
 	}
+
+	cleanup(historyptr);
+	return 0;
 }
 
 
 
-void handleinput(char * name, unsigned * stateptr, 
-		 char * stringremainder, listptr historyptr)
+
+
+
+
+void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 {
 
 #ifndef BUILTIN_ON
@@ -99,59 +84,70 @@ void handleinput(char * name, unsigned * stateptr,
 #endif
 
 	/*** Eliminate trailing newline characters. ***/
-	chomp(stringremainder);
 	int cmdnum = 0;
-	char cmd[MAXLINESIZE];
 
 	/*** Check the first argument for special cases and builtins. ***/
-	if (!strncmp(name, "exit\n", 5) || 
-		 !strncmp(name, "x\n", 2) ||
-		 !strncmp(name, "logout\n", 7))
+	if (!strncmp(strptr, "exit\n", 5) || 
+		 !strncmp(strptr, "x\n", 2) ||
+		 !strncmp(strptr, "logout\n", 7))
 	{
 		*stateptr |= QUIT;
 		BUILTIN_ON
 	}
-	else if (!strncmp(name, "myshell", 7))
+	else if (!strncmp(strptr, "myshell", MYSHELL))
 	{
-		system(stringremainder);
+		/*** Skip over the builtin part of the input string ***/
+		strptr += MYSHELL;
+
+		system(strptr);
+
+		/*** Now come back to it ***/
+		strptr -= MYSHELL;
+
 		BUILTIN_ON
 	}
-	else if (!strncmp(name, "chdir", 5))
+	else if (!strncmp(strptr, "chdir", 5))
 	{
-		if(chdir(stringremainder) == -1)
+		/*** Skip over the builtin part of the input string ***/
+		strptr += CHDIR;
+
+		if(chdir(strptr) == -1)
 		{
 			perror("chdir error");
 		}
+
+		/*** Now come back to it ***/
+		strptr -= CHDIR;
+
 		BUILTIN_ON
 	}
-	else if (!strncmp(name, "history", 7))
+	else if (!strncmp(strptr, "history\n", 8))
 	{ 
 		printstrings(historyptr);
 		BUILTIN_ON
 	}
-	else if (name[0] == '!')
+	else if (strptr[0] == '!')
 	{
-		cmdnum = atoi(&name[1]);
+		cmdnum = atoi(&strptr[1]);
 
 		/*** Get the command from history ***/
-		strncpy(cmd, getcmd(cmdnum,historyptr), MAXLINESIZE);
-		strncpy(name,"\0",1);
+		strncpy(strptr, getcmd(cmdnum,historyptr), MAXLINESIZE);
 
 		/*** Feed the command to the executor ***/
-		havechildren(name,stateptr,stringremainder);
+		havechildren(strptr,stateptr);
 
 		BUILTIN_ON
 	}
 	else 
 	{
-		havechildren(name,stateptr,stringremainder);
+		havechildren(strptr,stateptr);
 		BUILTIN_OFF
 	}
 
 }
 
 
-void havechildren(char * name, unsigned * stateptr, char * stringremainder)
+void havechildren(char * strptr, unsigned * stateptr)
 {
 #ifndef TURN_BACKGROUND_ON
 #define TURN_BACKGROUND_ON *stateptr |= BACKGROUND;
@@ -162,62 +158,36 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 #ifndef IS_NOT_IN_BACKGROUND
 #define IS_NOT_IN_BACKGROUND !(*stateptr & BACKGROUND)
 #endif
-	char * argptr[MAXARGS]; 
-	char * token = NULL;
-	char * buf = NULL;
+	char sepptr[MAXLINESIZE];
+	char * remainder[MAXARGS];
 
-
-	/*** Eliminate trailing newline characters. ***/
-	chomp(name);
-	chomp(stringremainder);
-
-	/*** Create the command string to execute. ***/
-	/*** Calloc is less efficient, but safer, and 
-	 * 	in this case, I'd prefer error free to
-	 * 	efficient. ***/
-	buf = (char*) calloc (1,sizeof(char)*MAXLINESIZE);
-	argptr[0] = buf;
-	strncat(argptr[0],name,MAXLINESIZE);
-	int i = 1;
-	while ((token = strsep(&stringremainder, " ")) != NULL)
-	{
-		buf = (char*) calloc (1,sizeof(char)*MAXLINESIZE);
-		argptr[i] = buf;
-		strncat(argptr[i],token,MAXLINESIZE);
-		strncat(argptr[i],"\0",MAXLINESIZE);
-		++i;
-	}
-
-	/*** Terminate the argument array with NULL. ***/
-	argptr[i] = NULL;
+	int i;
+	for(i=0;i<MAXARGS;++i)
+		remainder[i] = (char *) 0x0;
 
 	/*** Test for Background symbol '&' ***/
-	/*** Note: This will not work if there is a space 
-	 * 	after the ampersand, because the space will
-	 * 	constitute the final token, and we only search
-	 * 	the final token for the ampersand. Also, the
-	 * 	background will be flagged if there is an 
-	 * 	ampersand *anywhere* in the final token, 
-	 * 	since this is a simple blind search. ***/
-	int lasttoken = i-1;
-	int j = 0;
-	while(argptr[lasttoken][j] != '\0')
+	int lastchar = strlen(strptr);
+	while(strptr[lastchar] != '\0')
 	{
-		if (argptr[lasttoken][j] == '&')
+		if (strptr[lastchar] == '&')
 		{
 			TURN_BACKGROUND_ON
-			argptr[lasttoken] = NULL;
-			--lasttoken;
+			strptr[lastchar] = '\0';
+			--lastchar;
 			break;
 		}
-		++j;
 	}
+
+	strcpy(sepptr,strptr);
+
+	tokenize(sepptr, remainder);
+
 
 	/*** Create a new child process. ***/
 	int pid;
 	if ((pid = fork()) == 0) 
 	{
-		if (execvp(argptr[0], argptr) < 0)
+		if (execvp(sepptr, remainder) < 0)
 			perror("execvp error");
 		exit(0);
 	}
@@ -233,14 +203,6 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 		* otherwise, it doesn't. ***/
 		waitpid(pid, &status, WNOHANG); 
 	} 
-
-	/*** Free all calloc'd memory. ***/
-	int k = 0;
-	while(argptr[k])
-	{
-		free(argptr[k]);
-		++k;
-	}
 
 	TURN_BACKGROUND_OFF
 }
@@ -262,6 +224,27 @@ void cleanup(listptr historyptr)
 {
 	destructlist(&historyptr);
 	system("clear");
+}
+
+/*** Create a series of null separated tokens from a string 
+ * containing spaces ***/
+/*** Returns a pointer to an array of all strings except the first. ***/
+void tokenize(char * strptr, char ** returnptr)
+{
+	chomp(strptr);
+
+	int i = 0;
+	int j = 0;
+	while(strptr[i] != '\0')
+	{
+		if (strptr[i] == ' ')
+		{
+			strptr[i] = '\0';
+			returnptr[j] = &strptr[i+1];
+			++j;
+		}
+		++i;
+	}
 }
 
 /*** Removes Trailing Newline Characters. ***/
