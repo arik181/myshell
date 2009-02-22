@@ -1,5 +1,30 @@
 #include "myshell.h"
 
+#ifndef BUILTIN_ON
+#define BUILTIN_ON *stateptr |= BUILTIN;
+#endif
+#ifndef BUILTIN_OFF
+#define BUILTIN_OFF *stateptr &= ~(BUILTIN);
+#endif
+#ifndef HISTERROR_ON
+#define HISTERROR_ON *stateptr |= HISTERROR;
+#endif
+#ifndef HISTERROR_OFF
+#define HISTERROR_OFF *stateptr &= ~(HISTERROR);
+#endif
+#ifndef NO_HISTERROR
+#define NO_HISTERROR !(*stateptr & HISTERROR)
+#endif
+#ifndef TURN_BACKGROUND_ON
+#define TURN_BACKGROUND_ON *stateptr |= BACKGROUND;
+#endif
+#ifndef TURN_BACKGROUND_OFF
+#define TURN_BACKGROUND_OFF *stateptr &= ~(BACKGROUND);
+#endif
+#ifndef IS_NOT_IN_BACKGROUND
+#define IS_NOT_IN_BACKGROUND !(*stateptr & BACKGROUND)
+#endif
+
 /*
  * Roughly your shell should do the following:
  *
@@ -56,12 +81,16 @@ int main(int argc, char ** argv)
 		/*** If the user simply hits return, do nothing. ***/
 		if (string[0] != '\n')
 		{
+			/*** Otherwise, deal with input ***/
 			handleinput(strptr,stateptr,historyptr);
-		}
 
-		/*** Add the string to history ***/
-		chomp(string);
-		addstring(string,historyptr);
+			chomp(string);
+
+			/*** Add the string to history ***/
+			/*** If there was no history error ***/
+			if (NO_HISTERROR)
+				addstring(string,historyptr);
+		}
 	}
 
 	cleanup(historyptr);
@@ -76,22 +105,8 @@ int main(int argc, char ** argv)
 
 void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 {
-
-#ifndef BUILTIN_ON
-#define BUILTIN_ON *stateptr |= BUILTIN;
-#endif
-#ifndef BUILTIN_OFF
-#define BUILTIN_OFF *stateptr &= ~(BUILTIN);
-#endif
-#ifndef HISTERROR_ON
-#define HISTERROR_ON *stateptr |= HISTERROR;
-#endif
-#ifndef HISTERROR_OFF
-#define HISTERROR_OFF *stateptr &= ~(HISTERROR);
-#endif
-#ifndef NO_HISTERROR
-#define NO_HISTERROR !(*stateptr & HISTERROR)
-#endif
+	/*** Clear former history errors ***/
+	HISTERROR_OFF
 
 	/*** Eliminate trailing newline characters ***/
 	int cmdnum = 0;
@@ -111,7 +126,7 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 	{
 		cmdnum = atoi(&strptr[NUMLOCATION]);
 
-		if (cmdnum <= HISTORYSIZE && getcmd(cmdnum,historyptr))
+		if (getcmd(cmdnum,historyptr))
 		{
 			/*** Get the command from history ***/
 			strncpy(strptr, getcmd(cmdnum,historyptr), MAXLINESIZE);
@@ -153,6 +168,23 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 
 		BUILTIN_ON
 	}
+	else if (!strncmp(strptr, "cd ", CD) && NO_HISTERROR)
+	{
+		chomp(strptr);
+
+		/*** Skip over the builtin part of the input string ***/
+		strptr += CD;
+
+		if(chdir(strptr) == -1)
+		{
+			perror("cd error");
+		}
+
+		/*** Now come back to it ***/
+		strptr -= CD;
+
+		BUILTIN_ON
+	}
 	else if (!strncmp(strptr, "history", HISTORY))
 	{ 
 		printstrings(historyptr);
@@ -163,21 +195,14 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 		havechildren(strptr,stateptr);
 		BUILTIN_OFF
 	}
+	else if (!(NO_HISTERROR))
+		perror("History out of range");
 
 }
 
 
 void havechildren(char * strptr, unsigned * stateptr)
 {
-#ifndef TURN_BACKGROUND_ON
-#define TURN_BACKGROUND_ON *stateptr |= BACKGROUND;
-#endif
-#ifndef TURN_BACKGROUND_OFF
-#define TURN_BACKGROUND_OFF *stateptr &= ~(BACKGROUND);
-#endif
-#ifndef IS_NOT_IN_BACKGROUND
-#define IS_NOT_IN_BACKGROUND !(*stateptr & BACKGROUND)
-#endif
 	char sepptr[MAXLINESIZE];
 	char * remainder[MAXARGS];
 

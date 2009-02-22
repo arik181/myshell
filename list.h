@@ -1,14 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-#ifndef MAXLINESIZE
-#define MAXLINESIZE 	1024
-#endif
-
-#ifndef HISTORYSIZE
-#define HISTORYSIZE 	4
-#endif
+#include "definitions.h"
 
 /*** Linked List Definition ***/
 typedef struct node * nodeptr;

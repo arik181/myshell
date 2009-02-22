@@ -46,14 +46,13 @@ void printstrings(listptr list)
 
 	if(printptr)
 	{
-		do
+		while((strncmp(printptr -> string,"\0",1)) &&
+		      (printptr != list -> lastcmd))
 		{
+			printptr = printptr -> next;
 			printf("%d %s\n", printptr -> histnumber,
 					printptr -> string);
-			printptr = printptr -> next;
 		}
-		while((strncmp(printptr -> string,"\0",1)) &&
-		      (printptr != list -> lastcmd -> next));
 	}
 }
 
@@ -64,18 +63,17 @@ void printcmd(int n, listptr list)
 
 	if(printptr)
 	{
-		do
+		while((strncmp(printptr -> string,"\0",1)) &&
+		      (printptr != list -> lastcmd))
 		{
+			printptr = printptr -> next;
 			if (printptr -> histnumber == n)
 			{
 				printf("%d %s", printptr -> histnumber,
 						printptr -> string);
 				break;
 			}
-			printptr = printptr -> next;
 		}
-		while((strncmp(printptr -> string,"\0",1)) &&
-		      (printptr != list -> lastcmd -> next)); 
 	}
 }
 
