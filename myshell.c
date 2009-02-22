@@ -60,6 +60,7 @@ int main(int argc, char ** argv)
 		}
 
 		/*** Add the string to history ***/
+		chomp(string);
 		addstring(string,historyptr);
 	}
 
@@ -82,19 +83,48 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 #ifndef BUILTIN_OFF
 #define BUILTIN_OFF *stateptr &= ~(BUILTIN);
 #endif
+#ifndef HISTERROR_ON
+#define HISTERROR_ON *stateptr |= HISTERROR;
+#endif
+#ifndef HISTERROR_OFF
+#define HISTERROR_OFF *stateptr &= ~(HISTERROR);
+#endif
+#ifndef NO_HISTERROR
+#define NO_HISTERROR !(*stateptr & HISTERROR)
+#endif
 
-	/*** Eliminate trailing newline characters. ***/
+	/*** Eliminate trailing newline characters ***/
 	int cmdnum = 0;
 
-	/*** Check the first argument for special cases and builtins. ***/
-	if (!strncmp(strptr, "exit\n", 5) || 
-		 !strncmp(strptr, "x\n", 2) ||
-		 !strncmp(strptr, "logout\n", 7))
+	/*** Check the first argument for exit ***/
+	if (!strncmp(strptr, "exit\n", EXIT) || 
+		 !strncmp(strptr, "x\n", EX) ||
+		 !strncmp(strptr, "logout\n", LOGOUT))
 	{
 		*stateptr |= QUIT;
 		BUILTIN_ON
 	}
-	else if (!strncmp(strptr, "myshell", MYSHELL))
+
+	/*** Find out if we need to do some history replacement ***/
+	/*** If we do, replace our string with the correct command ***/
+	if (strptr[0] == '!')
+	{
+		cmdnum = atoi(&strptr[NUMLOCATION]);
+
+		if (cmdnum <= HISTORYSIZE && getcmd(cmdnum,historyptr))
+		{
+			/*** Get the command from history ***/
+			strncpy(strptr, getcmd(cmdnum,historyptr), MAXLINESIZE);
+
+		}
+		else 
+		{
+			HISTERROR_ON
+		}
+	}
+
+	/*** Test for other builtins ***/
+	if (!strncmp(strptr, "myshell ", MYSHELL) && NO_HISTERROR)
 	{
 		/*** Skip over the builtin part of the input string ***/
 		strptr += MYSHELL;
@@ -106,8 +136,10 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 
 		BUILTIN_ON
 	}
-	else if (!strncmp(strptr, "chdir", 5))
+	else if (!strncmp(strptr, "chdir ", CHDIR) && NO_HISTERROR)
 	{
+		chomp(strptr);
+
 		/*** Skip over the builtin part of the input string ***/
 		strptr += CHDIR;
 
@@ -121,24 +153,12 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 
 		BUILTIN_ON
 	}
-	else if (!strncmp(strptr, "history\n", 8))
+	else if (!strncmp(strptr, "history", HISTORY))
 	{ 
 		printstrings(historyptr);
 		BUILTIN_ON
 	}
-	else if (strptr[0] == '!')
-	{
-		cmdnum = atoi(&strptr[1]);
-
-		/*** Get the command from history ***/
-		strncpy(strptr, getcmd(cmdnum,historyptr), MAXLINESIZE);
-
-		/*** Feed the command to the executor ***/
-		havechildren(strptr,stateptr);
-
-		BUILTIN_ON
-	}
-	else 
+	else if (NO_HISTERROR)
 	{
 		havechildren(strptr,stateptr);
 		BUILTIN_OFF
@@ -177,6 +197,8 @@ void havechildren(char * strptr, unsigned * stateptr)
 			break;
 		}
 	}
+
+	chomp(strptr);
 
 	strcpy(sepptr,strptr);
 
@@ -228,26 +250,29 @@ void cleanup(listptr historyptr)
 
 /*** Create a series of null separated tokens from a string 
  * containing spaces ***/
-/*** Returns a pointer to an array of all strings except the first. ***/
+/*** Returns a pointer to an array of all strings ***/
 void tokenize(char * strptr, char ** returnptr)
 {
-	chomp(strptr);
-
 	int i = 0;
 	int j = 0;
+
+	returnptr[0] = &strptr[0];
+	++j;
+
 	while(strptr[i] != '\0')
 	{
 		if (strptr[i] == ' ')
 		{
 			strptr[i] = '\0';
 			returnptr[j] = &strptr[i+1];
+			chomp(returnptr[j]);
 			++j;
 		}
 		++i;
 	}
 }
 
-/*** Removes Trailing Newline Characters. ***/
+/*** Removes Trailing Newline Characters and spaces. ***/
 int chomp(char * chompstring)
 {
 	if (!chompstring)
@@ -255,13 +280,14 @@ int chomp(char * chompstring)
 
 	int lastchar = strlen(chompstring) - 1;
 
-	if (chompstring[lastchar] == '\n')
+	while (chompstring[lastchar] == '\n' || 
+		    chompstring[lastchar] == ' ')
 	{
 		chompstring[lastchar] = '\0';
-		return 1;
+		--lastchar;
 	}
-	else 
-		return 0;
+
+	return 0;
 }
 
 /*** Disposes of Unwashed Zombie Hordes ***/
@@ -280,6 +306,8 @@ void reapz()
 
 #undef BUILTIN_ON
 #undef BUILTIN_OFF
+#undef HISTERROR_ON
+#undef HISTERROR_OFF
 #undef TURN_BACKGROUND_ON
 #undef TURN_BACKGROUND_OFF
 #undef IS_NOT_IN_BACKGROUND

@@ -26,15 +26,21 @@
 #define NAMEPLUSFLAG		2
 #define CHARSINARG		2
 #define HISTORYSIZE		4
+#define NUMLOCATION		1
 
-#define CHDIR			5
-#define MYSHELL			7
+#define EXIT			5
+#define EX			2
+#define LOGOUT			7
+#define CHDIR			6
+#define MYSHELL			8
+#define HISTORY			7
 
 /*** Flags ***/
 #define DEFAULT			0x0
 #define QUIT			0x8
 #define BUILTIN			0x4
 #define BACKGROUND		0x2
+#define HISTERROR		0x1
 
 
 /*** Flow Control Functions ***/
