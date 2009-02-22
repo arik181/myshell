@@ -1,5 +1,6 @@
 #include "myshell.h"
 
+/*** Flag Setting Macros ***/
 #ifndef BUILTIN_ON
 #define BUILTIN_ON *stateptr |= BUILTIN;
 #endif
