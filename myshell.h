@@ -25,7 +25,7 @@
 #define ARGNAME			1
 #define NAMEPLUSFLAG		2
 #define CHARSINARG		2
-#define HISTORYSIZE		101
+#define HISTORYSIZE		4
 
 /*** Flags ***/
 #define DEFAULT			0x0

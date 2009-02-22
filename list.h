@@ -6,6 +6,10 @@
 #define MAXLINESIZE 	1024
 #endif
 
+#ifndef HISTORYSIZE
+#define HISTORYSIZE 	4
+#endif
+
 /*** Linked List Definition ***/
 typedef struct node * nodeptr;
 typedef struct list * listptr;
@@ -13,6 +17,7 @@ typedef struct list * listptr;
 struct list
 {
 	nodeptr arrayhead;
+	nodeptr	oldestcmd;
 	nodeptr lastcmd;
 };
 
@@ -27,4 +32,6 @@ struct node
 listptr initlist(int N);
 void addstring(char * newstring, listptr list);
 void printstrings(listptr list);
+void printcmd(int n, listptr list);
+char * getcmd(int n, listptr list);
 void destructlist(listptr * list);

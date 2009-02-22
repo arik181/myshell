@@ -17,7 +17,9 @@ listptr initlist(int N)
 		array[i].next = &array[i+1];
 	}
 
-	array[N].next = list -> lastcmd = list -> arrayhead = &array[0];
+	array[N].next = list -> lastcmd = list -> arrayhead = \
+	list -> oldestcmd = &array[0];
+
 	array[N+1].next = NULL;
 
 	return list;
@@ -27,27 +29,82 @@ listptr initlist(int N)
 void addstring(char * laststring, listptr list)
 {
 	static int count = 0;
+	++count;
+
+	if (count > HISTORYSIZE || count <= 1)
+		list -> oldestcmd = list -> oldestcmd -> next;
 
 	list -> lastcmd = list -> lastcmd -> next;
-	list -> lastcmd -> histnumber = ++count;
+	list -> lastcmd -> histnumber = count;
 	strncpy(list -> lastcmd -> string, laststring, MAXLINESIZE);
 }
 
 /*** Print all the strings in the list ***/
 void printstrings(listptr list)
 {
-	nodeptr printptr = list -> arrayhead -> next;
+	nodeptr printptr = list -> oldestcmd;
 
 	if(printptr)
 	{
-		while((strncmp(printptr -> string,"\0",1)) && 
-		     (printptr -> next != list -> arrayhead)) 
+		do
 		{
 			printf("%d %s", printptr -> histnumber,
 					printptr -> string);
 			printptr = printptr -> next;
 		}
+		while((strncmp(printptr -> string,"\0",1)) &&
+		      (printptr != list -> lastcmd -> next));
 	}
+}
+
+/*** Print one string from the list, based on its history number ***/
+void printcmd(int n, listptr list)
+{
+	nodeptr printptr = list -> oldestcmd;
+
+	if(printptr)
+	{
+		do
+		{
+			if (printptr -> histnumber == n)
+			{
+				printf("%d %s", printptr -> histnumber,
+						printptr -> string);
+				break;
+			}
+			printptr = printptr -> next;
+		}
+		while((strncmp(printptr -> string,"\0",1)) &&
+		      (printptr != list -> lastcmd -> next)); 
+	}
+}
+
+/*** Execute one string from the list, based on its history number ***/
+char * getcmd(int n, listptr list)
+{
+	nodeptr printptr = list -> oldestcmd;
+	int wehaveacommand = 0;
+
+	if(printptr)
+	{
+		do
+		{
+			if (printptr -> histnumber == n)
+			{
+				wehaveacommand = 1;
+				break;
+			}
+			
+			printptr = printptr -> next;
+		}
+		while((strncmp(printptr -> string,"\0",1)) &&
+		      (printptr != list -> lastcmd -> next)); 
+	}
+
+	if(wehaveacommand)
+		return(printptr -> string);
+	else 
+		return NULL;
 }
 
 /*** Free up all memory used by the list ***/

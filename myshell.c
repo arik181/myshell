@@ -63,6 +63,10 @@ void mainloop(unsigned * stateptr,listptr historyptr)
 	{
 		printf("%%");
 		fgets(string, MAXLINESIZE, stdin);
+
+		if(feof(stdin))
+			break;
+
 		strncpy(dupstring,string,MAXLINESIZE);
 		strcat(dupstring,"\0");
 
@@ -76,6 +80,7 @@ void mainloop(unsigned * stateptr,listptr historyptr)
 			handleinput(token,stateptr,dupptr,historyptr);
 		}
 
+		/*** Add the string to history ***/
 		addstring(string,historyptr);
 	}
 }
@@ -95,6 +100,8 @@ void handleinput(char * name, unsigned * stateptr,
 
 	/*** Eliminate trailing newline characters. ***/
 	chomp(stringremainder);
+	int cmdnum = 0;
+	char cmd[MAXLINESIZE];
 
 	/*** Check the first argument for special cases and builtins. ***/
 	if (!strncmp(name, "exit\n", 5) || 
@@ -111,23 +118,29 @@ void handleinput(char * name, unsigned * stateptr,
 	}
 	else if (!strncmp(name, "chdir", 5))
 	{
-		chdir(stringremainder);
+		if(chdir(stringremainder) == -1)
+		{
+			perror("chdir error");
+		}
 		BUILTIN_ON
 	}
 	else if (!strncmp(name, "history", 7))
 	{ 
-		if (historyptr -> lastcmd)
-		{
-			if (*stateptr & BUILTIN) 
-				printf("Builtin command:\n");
-
-			printstrings(historyptr);
-		}
+		printstrings(historyptr);
 		BUILTIN_ON
 	}
 	else if (name[0] == '!')
 	{
-		
+		cmdnum = atoi(&name[1]);
+
+		/*** Get the command from history ***/
+		strncpy(cmd, getcmd(cmdnum,historyptr), MAXLINESIZE);
+		strncpy(name,"\0",1);
+
+		/*** Feed the command to the executor ***/
+		havechildren(name,stateptr,stringremainder);
+
+		BUILTIN_ON
 	}
 	else 
 	{
@@ -207,6 +220,10 @@ void havechildren(char * name, unsigned * stateptr, char * stringremainder)
 		if (execvp(argptr[0], argptr) < 0)
 			perror("execvp error");
 		exit(0);
+	}
+	else if(pid == -1)
+	{
+		perror("execvp error");
 	}
 
 	int status;

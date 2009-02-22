@@ -24,6 +24,10 @@ PROFILE		= -pg
 $(NAME) : $(NAME).c $(NAME).h $(REQ1).c $(REQ1).h
 	$(COMPILER) -o $(NAME) $(NAME).c $(REQ1).c $(OPT) 
 
+run : $(NAME).c $(NAME).h $(REQ1).c $(REQ1).h
+	$(COMPILER) -o $(NAME) $(NAME).c $(REQ1).c $(OPT) 
+	./$(NAME)
+
 ### Special Cases ###
 	
 debug : debugtarget
