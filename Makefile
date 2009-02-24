@@ -21,8 +21,9 @@ PROFILE		= -pg
 
 ### Compile the application ###
 
-$(NAME) : $(NAME).c $(NAME).h $(REQ1).c $(REQ1).h
+$(NAME) : $(NAME).c $(NAME).h $(REQ1).c $(REQ1).h $(NAME2).c
 	$(COMPILER) -o $(NAME) $(NAME).c $(REQ1).c $(OPT) 
+	$(COMPILER) -o $(NAME2) $(NAME2).c $(OPT) 
 
 run : $(NAME).c $(NAME).h $(REQ1).c $(REQ1).h
 	$(COMPILER) -o $(NAME) $(NAME).c $(REQ1).c $(OPT) 
@@ -75,9 +76,6 @@ homework: $(NAME) profile
 	cp Makefile $(NAME).c $(NAME).h report.out typescript.out $(ADIR)/
 	tar cvf $(ADIR).tar $(ADIR)
 	echo "Done."
-
-$(NAME2) : $(NAME2).c
-	$(COMPILER) -o $(NAME2) $(NAME2).c $(OPT) 
 
 test : $(NAME) tests
 	script -f -c 'cat ./tests | ./$(NAME)'

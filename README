@@ -1,15 +1,7 @@
 Shell project for CS201.
 
-make
+make - compilation
 
-OR
+make debug - compile and run gdb
 
-make run
-
-OR
-
-make debug
-
-OR 
-
-make test
+make test - generate a typescript
