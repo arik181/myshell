@@ -78,3 +78,8 @@ homework: $(NAME) profile
 
 $(NAME2) : $(NAME2).c
 	$(COMPILER) -o $(NAME2) $(NAME2).c $(OPT) 
+
+test : $(NAME) tests
+	script -f -c 'cat ./tests | ./$(NAME)'
+
+

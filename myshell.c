@@ -112,14 +112,6 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 	/*** Eliminate trailing newline characters ***/
 	int cmdnum = 0;
 
-	/*** Check the first argument for exit ***/
-	if (!strncmp(strptr, "exit\n", EXIT) || 
-		 !strncmp(strptr, "x\n", EX) ||
-		 !strncmp(strptr, "logout\n", LOGOUT))
-	{
-		*stateptr |= QUIT;
-		BUILTIN_ON
-	}
 
 	/*** Find out if we need to do some history replacement ***/
 	/*** If we do, replace our string with the correct command ***/
@@ -139,8 +131,16 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 		}
 	}
 
-	/*** Test for other builtins ***/
-	if (!strncmp(strptr, "myshell ", MYSHELL) && NO_HISTERROR)
+
+	/*** Check the first argument for builtins ***/
+	if (!strncmp(strptr, "exit\n", EXIT) || 
+		 !strncmp(strptr, "x\n", EX) ||
+		 !strncmp(strptr, "logout\n", LOGOUT))
+	{
+		*stateptr |= QUIT;
+		BUILTIN_ON
+	}
+	else if (!strncmp(strptr, "myshell ", MYSHELL) && NO_HISTERROR)
 	{
 		/*** Skip over the builtin part of the input string ***/
 		strptr += MYSHELL;
@@ -196,9 +196,8 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 		havechildren(strptr,stateptr);
 		BUILTIN_OFF
 	}
-	else if (!(NO_HISTERROR))
+	else 
 		perror("History out of range");
-
 }
 
 
@@ -212,17 +211,17 @@ void havechildren(char * strptr, unsigned * stateptr)
 		remainder[i] = (char *) 0x0;
 
 	/*** Test for Background symbol '&' ***/
-	int lastchar = strlen(strptr);
-	while(strptr[lastchar] != '\0')
+	/*** If something is backgrounded, all arguments after
+	 * the ampersand are ignored. For the time being this 
+	 * is desired behavior, as it simplifies the code 
+	 * tremendously. ***/
+	char * substr;
+	if ((substr = strstr(strptr,"&")))
 	{
-		if (strptr[lastchar] == '&')
-		{
-			TURN_BACKGROUND_ON
-			strptr[lastchar] = '\0';
-			--lastchar;
-			break;
-		}
+		TURN_BACKGROUND_ON
+		*substr = '\0';
 	}
+
 
 	chomp(strptr);
 
@@ -271,7 +270,6 @@ void initialize(int argc, char ** argv, unsigned * stateptr,listptr *historyptr)
 void cleanup(listptr historyptr)
 {
 	destructlist(&historyptr);
-	system("clear");
 }
 
 /*** Create a series of null separated tokens from a string 
@@ -329,6 +327,8 @@ void reapz()
 			break;
 	}
 }
+
+
 
 #undef BUILTIN_ON
 #undef BUILTIN_OFF
