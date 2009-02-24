@@ -1,0 +1,15 @@
+Shell project for CS201.
+
+make
+
+OR
+
+make run
+
+OR
+
+make debug
+
+OR 
+
+make test
