@@ -1,3 +1,3 @@
 #include "defs.h"
-int backgroundtest(char * strptr, char * stateptr);
-int redirectiontest(char * strptr, char * stateptr);
+int backgroundtest(char * strptr, unsigned * stateptr);
+int redirectiontest(char * strptr, unsigned * stateptr);

@@ -1,3 +1,5 @@
+#include "util.h"
+
 /*** Create a series of null separated tokens from a string 
  * containing spaces ***/
 /*** Returns a pointer to an array of all strings ***/

@@ -1,4 +1,7 @@
-#include "myshell.h"
+#include "main.h"
+#include "input.h"
+#include "util.h"
+#include "signal.h"
 
 /*
  * Roughly, this shell will do the following:
@@ -67,6 +70,21 @@ int main(int argc, char ** argv)
 
 	cleanup(historyptr);
 	return 0;
+}
+
+
+/*** Disposes of Unwashed Zombie Hordes ***/
+void reapz()
+{
+	int pid = 0;
+	int status = 0;
+
+	while(1) 
+	{
+		pid = waitpid(-1, &status, WNOHANG); 
+		if (pid <= 0)
+			break;
+	}
 }
 
 

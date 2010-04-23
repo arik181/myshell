@@ -11,6 +11,7 @@ LD			= ld
 # Files
 SRC		= defs.h input.h main.h proc.h redir.h util.h list.h input.c main.c \
 	  		proc.c redir.c util.c list.c 
+SRC2	= mysleep.c 
 TEXSRC 	= designdoc.tex 
 PDF 	= designdoc.pdf 
 
@@ -26,7 +27,7 @@ LDFLAGS		= -lc -dynamic-linker /lib/ld-linux.so.2
 ### Compile the application ###
 all : $(SRC)
 	$(CC) -o $(NAME) $(SRC) $(CFLAGS)
-	$(CC) -o $(NAME2) $(SRC) $(CFLAGS)
+	$(CC) -o $(NAME2) $(SRC2) $(CFLAGS)
 
 debug : $(SRC)
 	$(CC) -o $(NAME) $(SRC) $(CFLAGS)

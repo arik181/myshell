@@ -1,6 +1,6 @@
 #include "redir.h"
 
-int backgroundtest(char * strptr, char * stateptr)
+int backgroundtest(char * strptr, unsigned * stateptr)
 {
 	/*** Test for Background symbol '&' ***/
 	/*** If something is backgrounded, all arguments after
@@ -13,14 +13,16 @@ int backgroundtest(char * strptr, char * stateptr)
 		TURN_BACKGROUND_ON
 		*substr = '\0';
 	}
+    return 0;
 }
 
-int redirectiontest(char * strptr, char * stateptr)
+int redirectiontest(char * strptr, unsigned * stateptr)
 {
     /*** Test for pipe symbol '|'***/
     /*** Test for redirection symbol '<'***/
     /*** Test for redirection symbol '<<'***/
     /*** Test for redirection symbol '>'***/
     /*** Test for redirection symbol '>>'***/
+    return 0;
 }
 

@@ -1,4 +1,6 @@
 #include "proc.h"
+#include "redir.h"
+#include "util.h"
 
 void havechildren(char * strptr, unsigned * stateptr)
 {

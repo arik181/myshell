@@ -41,9 +41,11 @@
 
 #define BUILTIN_ON *stateptr |= BUILTIN;
 #define BUILTIN_OFF *stateptr = *stateptr & ~(BUILTIN);
-#define BACKGROUND_ON *stateptr |= BACKGROUND;
-#define BACKGROUND_OFF *stateptr = *stateptr & ~(BACKGROUND);
+#define TURN_BACKGROUND_ON *stateptr |= BACKGROUND;
+#define TURN_BACKGROUND_OFF *stateptr = *stateptr & ~(BACKGROUND);
 #define HISTERROR_ON *stateptr |= HISTERROR;
 #define HISTERROR_OFF *stateptr = *stateptr & ~(HISTERROR);
+#define NO_HISTERROR !(HISTERROR & *stateptr)
+#define IS_NOT_IN_BACKGROUND !(BACKGROUND & *stateptr)
 
 #endif // DEFS

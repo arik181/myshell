@@ -1,4 +1,6 @@
 #include "input.h"
+#include "util.h"
+#include "proc.h"
 
 void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 {
