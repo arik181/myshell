@@ -4,4 +4,4 @@ make - compilation
 
 make debug - compile and run gdb
 
-make test - generate a typescript
+make test - run tests and generate a typescript

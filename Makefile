@@ -1,83 +1,72 @@
 # Change Me
-NAME	= myshell
-NAME2	= mysleep
-REQ1	= list
+QSH		= qsh
+SLEEP	= mysleep
 ADIR	= arik182
 
-# Constant Variables
-COMPILER	= gcc -Wall
-ASSEMBLER	= as
-LINKER		= ld
+# Files
+SRC		= defs.h input.h main.h proc.h redir.h util.h list.h input.c main.c \
+	  		proc.c redir.c util.c list.c 
+TEXSRC 	= designdoc.tex 
+PDF 	= designdoc.pdf 
 
 # Flags
-CURSES		= -lcurses
-NC		= -lncurses
+NC			= -lncurses
 DEBUG		= -g
-#OPT		= -O2
-#OPT		= -O3
+OPT			= -O2
 OBJECT		= -c
-LINK		= -lc -dynamic-linker /lib/ld-linux.so.2
 PROFILE		= -pg
+CFLAGS		= $(DEBUG) 
+LDFLAGS		= -lc -dynamic-linker /lib/ld-linux.so.2
 
 ### Compile the application ###
+all : $(SRC)
+	$(CC) $(CFLAGS) -o $(NAME) $(SRC)
 
-$(NAME) : $(NAME).c $(NAME).h $(REQ1).c $(REQ1).h $(NAME2).c
-	$(COMPILER) -o $(NAME) $(NAME).c $(REQ1).c $(OPT) 
-	$(COMPILER) -o $(NAME2) $(NAME2).c $(OPT) 
+debug : $(SRC)
+	$(CC) $(CFLAGS) -o $(NAME) $(SRC)
+	ctags $(SRC)
+	gdb ./$(NAME)
 
-run : $(NAME).c $(NAME).h $(REQ1).c $(REQ1).h
-	$(COMPILER) -o $(NAME) $(NAME).c $(REQ1).c $(OPT) 
-	./$(NAME)
+$(NAME) : $(SRC)
+	$(CC) $(CFLAGS) -o $(NAME) $(SRC)
+
+$(NAME2) : $(SRC)
+	$(CC) $(CFLAGS) -o $(NAME2) $(SRC)
 
 ### Special Cases ###
-	
-debug : debugtarget
-	ctags $(NAME).c && gdb ./$(NAME)
-
-profile : profiletarget
-	echo "Profiling..."
-	rm -rf report.out
-	rm -rf gmon.out
-	echo >> report.out
-	echo >> report.out
-	echo "--------------------------------------------------------------" >> report.out
-	echo >> report.out
-	echo "Profile of ./$(NAME)" >> report.out
-	echo >> report.out
-	./$(NAME) -s $(TESTFILE1) $(CPFILE) >> report.out
-	echo >> report.out
-	gprof --brief --no-graph ./$(NAME) >> report.out
-	vim report.out
-
-debugtarget : $(NAME).c $(NAME).h $(REQ1).h
-	$(COMPILER) $(DEBUG) -o $(NAME) $(NAME).c $(REQ1).c
-
-profiletarget : $(NAME).c $(NAME).h 
-	$(COMPILER) $(PROFILE) -o $(NAME) $(NAME).c 
-
 clean : $(NAME)
 	rm $(NAME) && rm *.o 
-
-dump: $(NAME)
-	objdump -d $(NAME) > objcode
-
-tex : 	
-	latex $(NAME).tex
-	dvipdfm $(NAME).dvi
-
-homework: $(NAME) profile
-	echo "Cleaning up..."
-	rm -rf $(NAME)
-	rm -rf *~
-	rm -rf $(ADIR)
-	echo "Creating directory..."
-	mkdir $(ADIR)
-	echo "Copying targets..."
-	cp Makefile $(NAME).c $(NAME).h report.out typescript.out $(ADIR)/
-	tar cvf $(ADIR).tar $(ADIR)
-	echo "Done."
 
 test : $(NAME) tests
 	script -f -c 'cat ./tests | ./$(NAME)'
 
+homework : $(NAME) typescript
+	echo "Cleaning up..."
+	rm -rf $(NAME)
+	rm -rf $(ADIR)
+	echo "Creating directory..."
+	mkdir $(ADIR)
+	echo "Copying targets..."
+	cp Makefile $(SRC) report.out typescript $(ADIR)/
+	tar cvf $(ADIR).tar $(ADIR)
+	echo "Done."
+
+UNAME		= arik181
+TITLE		= CS333 Project 1
+ADDRESS1	= cs333acc@cs.pdx.edu
+ADDRESS2	= $(UNAME)@gmail.com
+DIR			= $(UNAME)/
+TARFILE		= $(UNAME).tar.gz
+
+tar : homework	
+	rm -rf $(TARFILE)
+	tar czvf $(TARFILE) $(DIR)
+
+mail : tar 
+	mpack -a -s '$(TITLE) tar archive' $(TARFILE) $(ADDRESS1)
+	mpack -a -s '$(TITLE) tar archive' $(TARFILE) $(ADDRESS2)
+
+tex : $(TEXSRC)
+	pdflatex $(TEXSRC)
+	cp -f $(PDF) ~/public_html/
 

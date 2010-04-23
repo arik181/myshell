@@ -1,7 +1,7 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include "definitions.h"
+#include "defs.h"
+
+#ifndef LIST
+#define LIST
 
 /*** Linked List Definition ***/
 typedef struct node * nodeptr;
@@ -28,3 +28,5 @@ void printstrings(listptr list);
 void printcmd(int n, listptr list);
 char * getcmd(int n, listptr list);
 void destructlist(listptr * list);
+
+#endif // LIST
