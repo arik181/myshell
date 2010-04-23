@@ -1,3 +1,5 @@
+#include "input.h"
+
 void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 {
 	/*** Clear former history errors ***/

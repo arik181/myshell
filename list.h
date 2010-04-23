@@ -1,7 +1,7 @@
-#include "defs.h"
-
 #ifndef LIST
 #define LIST
+
+#include "defs.h"
 
 /*** Linked List Definition ***/
 typedef struct node * nodeptr;

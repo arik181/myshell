@@ -1,6 +1,6 @@
 # Change Me
-QSH		= qsh
-SLEEP	= mysleep
+NAME		= qsh
+NAME2	= mysleep
 ADIR	= arik182
 
 # Build Tools
