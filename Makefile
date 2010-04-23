@@ -3,6 +3,11 @@ QSH		= qsh
 SLEEP	= mysleep
 ADIR	= arik182
 
+# Build Tools
+CC			= gcc
+AS			= as
+LD			= ld
+
 # Files
 SRC		= defs.h input.h main.h proc.h redir.h util.h list.h input.c main.c \
 	  		proc.c redir.c util.c list.c 
@@ -11,7 +16,7 @@ PDF 	= designdoc.pdf
 
 # Flags
 NC			= -lncurses
-DEBUG		= -g
+DEBUG		= -g -Wall
 OPT			= -O2
 OBJECT		= -c
 PROFILE		= -pg
@@ -20,18 +25,13 @@ LDFLAGS		= -lc -dynamic-linker /lib/ld-linux.so.2
 
 ### Compile the application ###
 all : $(SRC)
-	$(CC) $(CFLAGS) -o $(NAME) $(SRC)
+	$(CC) -o $(NAME) $(SRC) $(CFLAGS)
+	$(CC) -o $(NAME2) $(SRC) $(CFLAGS)
 
 debug : $(SRC)
-	$(CC) $(CFLAGS) -o $(NAME) $(SRC)
+	$(CC) -o $(NAME) $(SRC) $(CFLAGS)
 	ctags $(SRC)
 	gdb ./$(NAME)
-
-$(NAME) : $(SRC)
-	$(CC) $(CFLAGS) -o $(NAME) $(SRC)
-
-$(NAME2) : $(SRC)
-	$(CC) $(CFLAGS) -o $(NAME2) $(SRC)
 
 ### Special Cases ###
 clean : $(NAME)
