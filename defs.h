@@ -32,20 +32,37 @@
 #define MYSHELL             2
 #define HISTORY             7
 
+#define IS(X,Y)         (X & Y)
+#define SYM_LT          0x1
+#define SYM_LT_APPEND   0x2
+#define SYM_GT          0x4
+#define SYM_GT_APPEND   0x8
+#define SYM_PIPE        0x10
+
 /*** Flags ***/
 #define DEFAULT         0x0
 #define QUIT            0x8
 #define BUILTIN         0x4
 #define BACKGROUND      0x2
 #define HISTERROR       0x1
+#define REDIRECTION     0x10
+#define PIPE            0x20
 
 #define BUILTIN_ON *stateptr |= BUILTIN;
-#define BUILTIN_OFF *stateptr = *stateptr & ~(BUILTIN);
-#define TURN_BACKGROUND_ON *stateptr |= BACKGROUND;
-#define TURN_BACKGROUND_OFF *stateptr = *stateptr & ~(BACKGROUND);
 #define HISTERROR_ON *stateptr |= HISTERROR;
+#define TURN_BACKGROUND_ON *stateptr |= BACKGROUND;
+#define TURN_REDIRECTION_ON *stateptr |= REDIRECTION;
+#define TURN_PIPE_ON *stateptr |= PIPE;
+
+#define BUILTIN_OFF *stateptr = *stateptr & ~(BUILTIN);
 #define HISTERROR_OFF *stateptr = *stateptr & ~(HISTERROR);
+#define TURN_BACKGROUND_OFF *stateptr = *stateptr & ~(BACKGROUND);
+#define TURN_REDIRECTION_OFF *stateptr = *stateptr & ~(REDIRECTION);
+#define TURN_PIPE_OFF *stateptr = *stateptr & ~(PIPE);
+
 #define NO_HISTERROR !(HISTERROR & *stateptr)
-#define IS_NOT_IN_BACKGROUND !(BACKGROUND & *stateptr)
+#define IS_IN_BACKGROUND (BACKGROUND & *stateptr)
+#define IS_REDIRECTING (REDIRECTION & *stateptr)
+#define IS_PIPED (PIPE & *stateptr)
 
 #endif // DEFS

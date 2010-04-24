@@ -4,7 +4,7 @@
 
 void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 {
-	/*** Clear former history errors ***/
+	/*** Clear former  history errors ***/
 	HISTERROR_OFF
 
 	int cmdnum = 0;
@@ -26,7 +26,6 @@ void handleinput(char * strptr, unsigned * stateptr, listptr historyptr)
 			HISTERROR_ON
 		}
 	}
-
 
 	/*** Check the first argument for builtins ***/
 	if (!strncmp(strptr, "exit\n", EXIT) || 

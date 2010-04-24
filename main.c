@@ -11,7 +11,7 @@
  * read one line at a time (newline terminated).  Your
  * shell should exit at EOF (control-d).
  * 
- * 2. execute the command using fork, execvp, wait, and exit.
+ * 2. execute the command using fork, execvp, waitpid, and exit.
  * I.e., the shell should fork a child, let the child call
  * exec, and wait for the child to terminate.  Be careful
  * about forking; i.e., run ps or ps -elf (or top) to make
@@ -38,8 +38,8 @@ int main(int argc, char ** argv)
 
 	initialize(argc,argv,stateptr,&historyptr);
 
-	char string[MAXLINESIZE];
-	char * strptr = &string[0];
+	char inputstring[MAXLINESIZE];
+	char * strptr = &inputstring[0];
 
 	/*** Main loop: 
 	 * Print a prompt, 
@@ -47,24 +47,21 @@ int main(int argc, char ** argv)
 	 * tokenize ***/
 	while(!feof(stdin) && !(*stateptr & QUIT))
 	{
-		printf("%%");
-		fgets(string, MAXLINESIZE, stdin);
-
-		if(feof(stdin))
-			break;
+        prettyprompt();
+        getinput(inputstring);
 
 		/*** If the user simply hits return, do nothing. ***/
-		if (string[0] != '\n')
+		if (inputstring[0] != '\n')
 		{
 			/*** Otherwise, deal with input ***/
 			handleinput(strptr,stateptr,historyptr);
 
-			chomp(string);
+			chomp(inputstring);
 
 			/*** Add the string to history ***/
 			/*** If there was no history error ***/
 			if (NO_HISTERROR)
-				addstring(string,historyptr);
+				addstring(inputstring,historyptr);
 		}
 	}
 
@@ -106,3 +103,31 @@ void cleanup(listptr historyptr)
 	destructlist(&historyptr);
 }
 
+void prettyprompt()
+{
+    char hostname[MAXLINESIZE];
+    char cwd[MAXLINESIZE];
+    size_t len = MAXLINESIZE;
+
+    /*** Obtain hostname and current working directory:
+     * We do this on every iteration of the loop because these
+     * values are subject to change.
+     * ***/
+    if ((gethostname(hostname, len))) 
+        strncpy(hostname, ".\0", MAXLINESIZE);
+
+    if (!(strncpy(cwd, getenv("PWD"), MAXLINESIZE)))
+        strncpy(cwd, ".\0", MAXLINESIZE);
+    
+    /*** Print prompt ***/
+    printf("< %s:%s >%% ", hostname, cwd);
+}
+
+void getinput(char * inputstring)
+{
+    inputstring[0] = '\0';
+    fgets(inputstring, MAXLINESIZE, stdin);
+
+    if(feof(stdin))
+        exit(0);
+}
