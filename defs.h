@@ -62,7 +62,7 @@
 
 #define NO_HISTERROR !(HISTERROR & *stateptr)
 #define IS_IN_BACKGROUND (BACKGROUND & *stateptr)
-#define IS_REDIRECTING (REDIRECTION & *stateptr)
+#define IS_REDIRECT (REDIRECTION & *stateptr)
 #define IS_PIPED (PIPE & *stateptr)
 
 #endif // DEFS

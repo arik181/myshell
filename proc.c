@@ -2,12 +2,13 @@
 #include "redir.h"
 #include "util.h"
 
+
+
 void havechildren(char * strptr, unsigned * stateptr)
 {
 	char tokenptr[MAXLINESIZE];
 	char * remainder[MAXARGS];
-    unsigned operator;
-    int status = 0;
+    unsigned operation;
 
 	int i;
 	for(i=0;i<MAXARGS;++i)
@@ -15,7 +16,7 @@ void havechildren(char * strptr, unsigned * stateptr)
 
 	/*** Test for various symbols and set flags ***/
     backgroundtest(strptr,stateptr);
-    operator = operatortest(strptr,stateptr);
+    operation = operatortest(strptr,stateptr);
 
     /*** Clean up the string a bit ***/
     chomp(strptr);
@@ -24,26 +25,31 @@ void havechildren(char * strptr, unsigned * stateptr)
     strncpy(tokenptr,strptr,MAXLINESIZE);
     tokenize(tokenptr, remainder);
 
-    if (IS(operator,SYM_LT))
+    if (IS_REDIRECT)
     {
-        printf("symbol is less than\n");
+        redirectionfork(tokenptr, remainder, stateptr, operation);
     }
-    else if (IS(operator,SYM_GT))
+    else if (IS_PIPED)
     {
-        printf("symbol is greater than\n");
+        pipefork(tokenptr, remainder, stateptr);
     }
-    else if (IS(operator,SYM_LT_APPEND))
+    else
     {
-        printf("symbol is less than append\n");
+        ordinaryfork(tokenptr, remainder, stateptr);
     }
-    else if (IS(operator,SYM_GT_APPEND))
-    {
-        printf("symbol is greater than append\n");
-    }
-    else if (IS(operator,SYM_PIPE))
-    {
-        printf("symbol is pipe\n");
-    }
+
+    operation = 0x0;
+    TURN_BACKGROUND_OFF
+    TURN_REDIRECTION_OFF
+    TURN_PIPE_OFF
+}
+
+
+
+
+void ordinaryfork(char * tokenptr, char ** remainder, unsigned * stateptr)
+{
+    int status = 0;
 
     /*** Create a new child process. ***/
     int childpid = fork();
@@ -73,10 +79,19 @@ void havechildren(char * strptr, unsigned * stateptr)
                 perror("wait error");
         }
     }
-
-    operator = 0x0;
-    TURN_BACKGROUND_OFF
-    TURN_REDIRECTION_OFF
-    TURN_PIPE_OFF
 }
 
+void pipefork(char * tokenptr, char ** remainder, unsigned * stateptr)
+{
+    /*** Create a pipe. ***/
+    /*** Create two children. ***/
+    /*** In first child, redirect. ***/
+    /*** In second child, redirect. ***/
+}
+
+void redirectionfork(char * tokenptr, char ** remainder, unsigned * stateptr, unsigned operation)
+{
+    /*** Open file handler. ***/
+    /*** Create a child. ***/
+    /*** In child, redirect. ***/
+}
