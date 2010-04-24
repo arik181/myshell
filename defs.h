@@ -2,6 +2,7 @@
 #define DEFS
 
 
+/*** Includes ***/
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,14 +33,13 @@
 #define MYSHELL             2
 #define HISTORY             7
 
-#define IS(X,Y)         (X & Y)
+/*** Flags ***/
 #define SYM_LT          0x1
 #define SYM_LT_APPEND   0x2
 #define SYM_GT          0x4
 #define SYM_GT_APPEND   0x8
 #define SYM_PIPE        0x10
 
-/*** Flags ***/
 #define DEFAULT         0x0
 #define QUIT            0x8
 #define BUILTIN         0x4
@@ -48,6 +48,8 @@
 #define REDIRECTION     0x10
 #define PIPE            0x20
 
+/*** Flag Related Macros ***/
+#define IS(X,Y)         (X & Y)
 #define BUILTIN_ON *stateptr |= BUILTIN;
 #define HISTERROR_ON *stateptr |= HISTERROR;
 #define TURN_BACKGROUND_ON *stateptr |= BACKGROUND;

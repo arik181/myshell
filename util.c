@@ -1,55 +1,26 @@
 #include "util.h"
 
-/*** Create an array of executable commands, by replacing
- * the critical operator with a null character. ***/
+/*** Create a series of null separated tokens from a string 
+ * containing spaces ***/
 /*** Returns a pointer to an array of all strings ***/
-void tokenize(char * tokenptr, char ** returnptr)
+void tokenize(char * strptr, char ** returnptr)
 {
 	int i = 0;
 	int j = 0;
 
-	returnptr[0] = &tokenptr[0];
+	returnptr[0] = &strptr[0];
 	++j;
 
-	while(tokenptr[i] != '\0')
+	while(strptr[i] != '\0')
 	{
-		if (tokenptr[i] == '<')
-        {
-			tokenptr[i] = '\0';
-            ++i;
-            if (tokenptr[i] == '<')
-            {
-                tokenptr[i] = '\0';
-                returnptr[j] = &tokenptr[i+2];
-            }
-            else
-                returnptr[j] = &tokenptr[i+1];
-			chomp(returnptr[j]);
-			++j;
-        }
-        else if (tokenptr[i] == '>')
-        {
-			tokenptr[i] = '\0';
-            ++i;
-            if (tokenptr[i] == '>')
-            {
-                tokenptr[i] = '\0';
-                returnptr[j] = &tokenptr[i+2];
-            }
-            else
-                returnptr[j] = &tokenptr[i+1];
-			chomp(returnptr[j]);
-			++j;
-        }
-        else if (tokenptr[i] == '|')
+		if (strptr[i] == ' ')
 		{
-			tokenptr[i] = '\0';
-            ++i;
-			returnptr[j] = &tokenptr[i+1];
+			strptr[i] = '\0';
+			returnptr[j] = &strptr[i+1];
 			chomp(returnptr[j]);
 			++j;
 		}
-        ++i;
+		++i;
 	}
 }
 

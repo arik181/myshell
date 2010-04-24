@@ -1,5 +1,4 @@
 #include "defs.h"
-
-void tokenize(char * tokenptr, char ** remainder);
+void tokenize(char * strptr, char ** remainder);
 int chomp(char * chompstring);
 
